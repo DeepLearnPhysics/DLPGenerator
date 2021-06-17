@@ -1,0 +1,13 @@
+# Table of content
+# Learn more at https://jupyterbook.org/customize/toc.html
+#
+- file: index
+
+- part: ParticleBomb
+  chapters:
+    - file: Introduction.md
+      title: Getting started
+    - file: Configuration.md
+      title: Configure the generator
+    - file: Validation.md
+      title: Looking at the output
