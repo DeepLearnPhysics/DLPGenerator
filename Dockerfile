@@ -7,6 +7,8 @@ ENV LD_LIBRARY_PATH="${ROOTSYS}/lib:${LD_LIBRARY_PATH}"
 ENV PYTHONPATH="${ROOTSYS}/lib:${PYTHONPATH}"
 
 # DLPGenerator
+ENV DLPGENERATOR_ROOT6=1
+ENV DLPGENERATOR_CXX=g++
 ENV DLPGENERATOR_DIR=/app/DLPGenerator
 ENV DLPGENERATOR_INCDIR="${DLPGENERATOR_DIR}/build/include"
 ENV DLPGENERATOR_BUILDDIR="${DLPGENERATOR_DIR}/build"
@@ -15,7 +17,6 @@ ENV LD_LIBRARY_PATH="${DLPGENERATOR_DIR}/build/lib:${LD_LIBRARY_PATH}"
 ENV PYTHONPATH="${DLPGENERATOR_DIR}/python:${PYTHONPATH}"
 RUN git clone https://github.com/DeepLearnPhysics/DLPGenerator.git /app/DLPGenerator && \
     cd /app/DLPGenerator && \
-    source setup.sh && \
     make 
 
 ARG NB_USER=jovyan
