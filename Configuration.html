@@ -1,0 +1,697 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configuring ParticleBomb &#8212; DLP Event Generator</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet" />
+  <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe,.cell"
+        const thebe_selector_input = "pre,.cell_input div.highlight"
+        const thebe_selector_output = ".output,.cell_output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Validating the output" href="Validation.html" />
+    <link rel="prev" title="Getting started" href="Introduction.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+      <img src="_static/bomb.jpg" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">DLP Event Generator</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="index.html">
+   DLP Event Generator
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  ParticleBomb
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="Introduction.html">
+   Getting started
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Configure the generator
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="Validation.html">
+   Looking at the output
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="_sources/Configuration.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/Configuration.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/DeepLearnPhysics/DLPGenerator"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/DeepLearnPhysics/DLPGenerator/issues/new?title=Issue%20on%20page%20%2FConfiguration.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/DeepLearnPhysics/DLPGenerator/master?urlpath=tree/Configuration.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        <button type="button" class="btn btn-secondary topbarbtn"
+            onclick="initThebeSBT()" title="Launch Thebe" data-toggle="tooltip" data-placement="left"><i
+                class="fas fa-play"></i><span style="margin-left: .4em;">Live Code</span></button>
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-structure-and-ideas-behind">
+   The structure and ideas behind
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-particlebomb-works">
+   How ParticleBomb works
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#example-a-generating-four-particles">
+     Example A: generating four particles
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#example-b-including-an-electron-in-the-choice">
+     Example B: including an electron in the choice
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#example-c-add-another-particle-configuration">
+     Example C: add another particle configuration
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#a-few-special-configuration-parameters">
+   A few special configuration parameters
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#example-d-generating-a-parent-to-group-particles">
+     Example D: generating a parent to group particles
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#example-e-include-multiple-interaction-definitions">
+     Example E: include multiple interaction definitions
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="configuring-particlebomb">
+<h1>Configuring ParticleBomb<a class="headerlink" href="#configuring-particlebomb" title="Permalink to this headline">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> event generator, as its name suggests, can generate multiple particles coming from the same location, called an <em>event vertex</em> or simply vertex, much like a neutrino interaction. The generator is meant for training ML algorithms for generic data reconstruction tasks, so the generation follows a uniform distribution in the specified phasespace unlike a neam-neutrino simulation which is often colimated toward the direction of the beam. For instance, the vertex generated by the <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> is uniformly distributed within the specified volume. Generated particles follow a flat kinetic energy (or momentum, it’s a choice) distribution and produced in isotropic directions. The volume in which the vertex is sampled, the multiplicity of particles, the number of vertex to be sampled, the energy of particles, etc., etc. all need to be specified in the configuration file.</p>
+<p>Let’s start with a simplest configuration that generates a mono-energetic muon.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+
+<span class="s1">GeneratorMPV:         # Just a name to define a block, not important, can be anything</span>
+<span class="s1">  NumEvent: [1,1]     # the number of times the interaction (vertex) is sampled</span>
+<span class="s1">  NumParticle: [1,1]  # the number of particles to be generated per vertex</span>
+<span class="s1">  XRange: [0,1000]    # The x-span [mm] of the volume to sample a vertex</span>
+<span class="s1">  YRange: [0,1000]    # The y-span [mm] of the volume to sample a vertex</span>
+<span class="s1">  ZRange: [0,1000]    # The z-span [mm] of the volume to sample a vertex</span>
+<span class="s1">  TRange: [0,10]      # The time-span [ns] to sample a vertex</span>
+<span class="s1">  Particles:          # A list of particles to be sampled is defined in this block</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [13]  # The list of PDG code to be sampled for a generation</span>
+<span class="s1">      NumRange: [1,1] # The min and the max number of this particle that can be generated</span>
+<span class="s1">      KERange:  [1,1] # The range of kinetic energy [GeV] to sample</span>
+<span class="s1">      UseMom:   False # If True, the KERange is interpreted as a momentum</span>
+<span class="s1">      Weight:   1     # Relative weight of likelihood to be generated (explained later)</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">dlp_generator</span> <span class="kn">import</span> <span class="n">create_generator</span>
+
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_text</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span> <span class="p">)</span>
+
+
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Welcome to JupyROOT 6.22/09
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="the-structure-and-ideas-behind">
+<h2>The structure and ideas behind<a class="headerlink" href="#the-structure-and-ideas-behind" title="Permalink to this headline">¶</a></h2>
+<p>It’s useful to introduce a concept of an <em>event</em> or an <em>interaction</em>. These are interchangebly used here, and they define an occurrence of particle(s) at a unique location, called vertex. A good example outside <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> is a neutrino interaction. The configuration of the <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> consists of two levels of attributes. The top level specifies parameters that govern interaction-level information. The lower level specifies parameters that govern particle-wise information.</p>
+<p>In the above example, the top level is <code class="docutils literal notranslate"><span class="pre">GeneratorMPV</span></code>, which is a name of this particular configuration. The lower level part can be found under <code class="docutils literal notranslate"><span class="pre">Particles:</span></code>, and it provides particle-wise specification. As you can see, the lower level configuration takes a format of a list (i.e. it is under <code class="docutils literal notranslate"><span class="pre">-</span></code> below <code class="docutils literal notranslate"><span class="pre">Particles:</span></code>). We can provide more than one particle information in this block.</p>
+<p>Next, we cover an overview of how the <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> event generator works and how attributes in each block play a role.</p>
+</div>
+<div class="section" id="how-particlebomb-works">
+<h2>How ParticleBomb works<a class="headerlink" href="#how-particlebomb-works" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p>Decide how many time to sample an event. Randomly set in the range of <code class="docutils literal notranslate"><span class="pre">NumEvent</span></code>. In the above case, <code class="docutils literal notranslate"><span class="pre">[1,1]</span></code> means it always produce 1 event.</p></li>
+<li><p>For each event, decide how many particles to sample. Randomly set in the range of <code class="docutils literal notranslate"><span class="pre">NumParticle</span></code>. In the above case, <code class="docutils literal notranslate"><span class="pre">[1,1]</span></code> means it always produce only 1 particle.</p></li>
+<li><p>For each event, decide where the vertex (x,y,z,t) should be. Randomly set in the range of <code class="docutils literal notranslate"><span class="pre">XRange</span></code>, <code class="docutils literal notranslate"><span class="pre">YRange</span></code>, <code class="docutils literal notranslate"><span class="pre">ZRange</span></code>, <code class="docutils literal notranslate"><span class="pre">TRange</span></code>.</p></li>
+</ol>
+<p>Up to this point, all attributes concern the interaction-level information including how many particles to be generated in each interaction. The next steps concern a particle-level information and rely on the lower level part of the configuration.</p>
+<ol class="simple">
+<li><p>Decide which “<em>particle</em>” to sample. Here, a “particle” is an instance in the list of configurations defined under <code class="docutils literal notranslate"><span class="pre">Particles:</span></code> block. In the above example, we only have one particle (i.e. the list length is 1). If you have multiple entries (i.e. “particles”), then whether a certain particle is sampled or not concerns two parameters under each particle block.</p></li>
+</ol>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">NumRange</span></code> specifies how often this particle must/can be sampled. These are specified by two integers, min (=must be sampled at least) and max (=cannot be sampled more than this). In the above example, <code class="docutils literal notranslate"><span class="pre">[1,1]</span></code> means this particle <strong>must be sampled at least once</strong> and cannot be sampled more than once.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Weight</span></code> specifies how likely this particle is sampled when there are multiple particles defined in the lower block. Note that, at the interaction level, the total number of particles is already defined. Also, the min specified in <code class="docutils literal notranslate"><span class="pre">NumRange</span></code> is respected for all particles listed in the configuration (if this exceeds the number of particles allowed in an interaction, the generator throws an exception and stops). If there are more particles to be sampled after generating all particles with specified minimum count, then the generator use a weighted-random sampling to choose which particle to be generated. If you set the <code class="docutils literal notranslate"><span class="pre">Weight</span></code> factor larger than others, this particle is more likely to be generated beyond the minimum count.</p></li>
+</ul>
+<ol class="simple">
+<li><p>After the previous step, a particle information is generated. <code class="docutils literal notranslate"><span class="pre">PDG</span></code> is a list of types a subject particle can take. If multiple PDG codes are given, the generator randomly selects one of them. Next, the kinetic energy is sampled randomly within the range specified in <code class="docutils literal notranslate"><span class="pre">KERange</span></code> in GeV. If preferred to randomly sample in the momentum space, <code class="docutils literal notranslate"><span class="pre">UseMom</span></code> flag can be set to True.</p></li>
+</ol>
+<p>In the example above, we specified <code class="docutils literal notranslate"><span class="pre">NumEvent</span></code>, <code class="docutils literal notranslate"><span class="pre">NumParticle</span></code>, and <code class="docutils literal notranslate"><span class="pre">NumRange</span></code> all to <code class="docutils literal notranslate"><span class="pre">[1,1]</span></code>. This means, every time, the generator produce 1 event, 1 particle per event, and at least and at most (=always exactly) 1 particle configuration is sampled. That configuration has <code class="docutils literal notranslate"><span class="pre">PDG:</span> <span class="pre">[13]</span></code>, which means it’s always a muon and energy is sampled uniformly in the range of <code class="docutils literal notranslate"><span class="pre">KERange:</span> <span class="pre">[1,1]</span></code> GeV (haha yes, that means it’s always 1GeV).</p>
+<p>Let’s go over some example configurations.</p>
+<div class="section" id="example-a-generating-four-particles">
+<h3>Example A: generating four particles<a class="headerlink" href="#example-a-generating-four-particles" title="Permalink to this headline">¶</a></h3>
+<p>Let’s modify <code class="docutils literal notranslate"><span class="pre">NumParticle</span></code> so that it always produces 4 particles, and change the only particle’s configuration <code class="docutils literal notranslate"><span class="pre">NumRange</span></code> to allow up to 4 particles to be generated. This should produce two muons.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+
+<span class="s1">GeneratorMPV:</span>
+<span class="s1">  NumEvent: [1,1]</span>
+<span class="s1">  NumParticle: [4,4]</span>
+<span class="s1">  XRange: [0,1000]</span>
+<span class="s1">  YRange: [0,1000]</span>
+<span class="s1">  ZRange: [0,1000]</span>
+<span class="s1">  TRange: [0,10]</span>
+<span class="s1">  Particles:</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [13]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   1</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_text</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 4 particles...
+
+  ---- Line 0 PDG 13 energy 1.10566 [GeV]
+
+  ---- Line 1 PDG 13 energy 1.10566 [GeV]
+
+  ---- Line 2 PDG 13 energy 1.10566 [GeV]
+
+  ---- Line 3 PDG 13 energy 1.10566 [GeV]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="example-b-including-an-electron-in-the-choice">
+<h3>Example B: including an electron in the choice<a class="headerlink" href="#example-b-including-an-electron-in-the-choice" title="Permalink to this headline">¶</a></h3>
+<p>Let’s add an electron as another choice!</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+
+<span class="s1">GeneratorMPV:</span>
+<span class="s1">  NumEvent: [1,1]</span>
+<span class="s1">  NumParticle: [4,4]</span>
+<span class="s1">  XRange: [0,1000]</span>
+<span class="s1">  YRange: [0,1000]</span>
+<span class="s1">  ZRange: [0,1000]</span>
+<span class="s1">  TRange: [0,10]</span>
+<span class="s1">  Particles:</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [13,11]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   1</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_text</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 4 particles...
+
+  ---- Line 0 PDG 11 energy 1.00051 [GeV]
+
+  ---- Line 1 PDG 11 energy 1.00051 [GeV]
+
+  ---- Line 2 PDG 11 energy 1.00051 [GeV]
+
+  ---- Line 3 PDG 13 energy 1.10566 [GeV]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="example-c-add-another-particle-configuration">
+<h3>Example C: add another particle configuration<a class="headerlink" href="#example-c-add-another-particle-configuration" title="Permalink to this headline">¶</a></h3>
+<p>Introduce another particle with <code class="docutils literal notranslate"><span class="pre">PDG:</span> <span class="pre">[111]</span></code> (a neutral pion). Let’s set the <code class="docutils literal notranslate"><span class="pre">Weight:</span> <span class="pre">0.2</span></code> so it is less likely to be produced compared to the first particle.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+
+<span class="s1">GeneratorMPV:</span>
+<span class="s1">  NumEvent: [1,1]</span>
+<span class="s1">  NumParticle: [4,4]</span>
+<span class="s1">  XRange: [0,1000]</span>
+<span class="s1">  YRange: [0,1000]</span>
+<span class="s1">  ZRange: [0,1000]</span>
+<span class="s1">  TRange: [0,10]</span>
+<span class="s1">  Particles:</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [13,11]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   1</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [111]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   0.2</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_text</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 4 particles...
+
+  ---- Line 0 PDG 11 energy 1.00051 [GeV]
+
+  ---- Line 1 PDG 13 energy 1.10566 [GeV]
+
+  ---- Line 2 PDG 13 energy 1.10566 [GeV]
+
+  ---- Line 3 PDG 13 energy 1.10566 [GeV]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="a-few-special-configuration-parameters">
+<h2>A few special configuration parameters<a class="headerlink" href="#a-few-special-configuration-parameters" title="Permalink to this headline">¶</a></h2>
+<p>I hope the above examples were helpful to learn how to use the <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> event generator. There are a few more special configuration parameters that have not been covered and they can be critical.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SEED</span></code> … this sets the random number generator’s seed. <code class="docutils literal notranslate"><span class="pre">-1</span></code> will be a time-seed, suited for physics studies. For debugging, in order to have a reproducible behavior, give a positive integer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Debug</span></code> … setting this <code class="docutils literal notranslate"><span class="pre">True</span></code> run the generator with more verbose mode, mainly for debugging purpose.</p></li>
+</ul>
+<p>These two parameters should be specified at the root-level (see the example below). The last parameter is an important one and to be specified at the interaction configuration block.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">AddParent</span></code> … setting this <code class="docutils literal notranslate"><span class="pre">True</span></code> is recommended(!). When you generate multiple interactions where each interaction contains multiple particles, the output will be a flat list of all particles. It would be helpful if there can be a notion of “grouping” each interaction. When <code class="docutils literal notranslate"><span class="pre">AddParent</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, a virtual parent particle is added to group those particles that belong to the same event.</p></li>
+</ul>
+<div class="section" id="example-d-generating-a-parent-to-group-particles">
+<h3>Example D: generating a parent to group particles<a class="headerlink" href="#example-d-generating-a-parent-to-group-particles" title="Permalink to this headline">¶</a></h3>
+<p>Modify <code class="docutils literal notranslate"><span class="pre">NumEvent</span></code> to allow multiple interactions + enable <code class="docutils literal notranslate"><span class="pre">AddParent</span></code> in the interaction configuration block.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+
+<span class="s1">SEED:      1</span>
+<span class="s1">Debug:     False</span>
+
+<span class="s1">GeneratorMPV:</span>
+<span class="s1">  NumEvent: [2,3]</span>
+<span class="s1">  NumParticle: [4,4]</span>
+<span class="s1">  XRange: [0,1000]</span>
+<span class="s1">  YRange: [0,1000]</span>
+<span class="s1">  ZRange: [0,1000]</span>
+<span class="s1">  TRange: [0,10]</span>
+<span class="s1">  AddParent: True</span>
+<span class="s1">  Particles:</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [13,11]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   1</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [111]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   0.2</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_text</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 10 particles...
+
+  ---- Line 0 PDG 39 energy 4.42263 [GeV] ... 4 children particles
+    |- Line 1 PDG 13 energy 1.10566 [GeV] ... parent 0
+    |- Line 2 PDG 13 energy 1.10566 [GeV] ... parent 0
+    |- Line 3 PDG 13 energy 1.10566 [GeV] ... parent 0
+    |- Line 4 PDG 13 energy 1.10566 [GeV] ... parent 0
+
+  ---- Line 5 PDG 39 energy 4.21234 [GeV] ... 4 children particles
+    |- Line 6 PDG 11 energy 1.00051 [GeV] ... parent 5
+    |- Line 7 PDG 13 energy 1.10566 [GeV] ... parent 5
+    |- Line 8 PDG 13 energy 1.10566 [GeV] ... parent 5
+    |- Line 9 PDG 11 energy 1.00051 [GeV] ... parent 5
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="example-e-include-multiple-interaction-definitions">
+<h3>Example E: include multiple interaction definitions<a class="headerlink" href="#example-e-include-multiple-interaction-definitions" title="Permalink to this headline">¶</a></h3>
+<p>We can include two different kind of interactions. Let’s add a “cosmic-like” interactions, which we call <code class="docutils literal notranslate"><span class="pre">GeneratorMPR</span></code>, that throw in single particles (i.e. each interaction contain only 1 particle, likely muon, and have many instance of interactions). We don’t enable <code class="docutils literal notranslate"><span class="pre">AddParent</span></code> for the <code class="docutils literal notranslate"><span class="pre">GeneratorMPR</span></code> because we configure it to only create 1 particle per interaction (so no need to be grouped).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config_text</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+
+<span class="s1">SEED:      1</span>
+<span class="s1">Debug:     False</span>
+
+<span class="s1">GeneratorMPV:</span>
+<span class="s1">  NumEvent: [2,3]</span>
+<span class="s1">  NumParticle: [4,4]</span>
+<span class="s1">  XRange: [0,1000]</span>
+<span class="s1">  YRange: [0,1000]</span>
+<span class="s1">  ZRange: [0,1000]</span>
+<span class="s1">  TRange: [0,10]</span>
+<span class="s1">  AddParent: True</span>
+<span class="s1">  Particles:</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [13,11]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   1</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [111]</span>
+<span class="s1">      NumRange: [1,4]</span>
+<span class="s1">      KERange:  [1,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   0.2</span>
+
+<span class="s1">GeneratorMPR:</span>
+<span class="s1">  NumEvent: [1,10]</span>
+<span class="s1">  NumParticle: [1,1]</span>
+<span class="s1">  XRange: [0,1000]</span>
+<span class="s1">  YRange: [0,1000]</span>
+<span class="s1">  ZRange: [0,1000]</span>
+<span class="s1">  TRange: [0,10]</span>
+<span class="s1">  Particles:</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [13]</span>
+<span class="s1">      NumRange: [0,10]</span>
+<span class="s1">      KERange:  [0,1]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   5</span>
+<span class="s1">    -</span>
+<span class="s1">      PDG:      [2212]</span>
+<span class="s1">      NumRange: [0,5]</span>
+<span class="s1">      KERange:  [0,0.5]</span>
+<span class="s1">      UseMom:   False</span>
+<span class="s1">      Weight:   1</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_text</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 15 particles...
+
+  ---- Line 0 PDG 39 energy 4.42263 [GeV] ... 4 children particles
+    |- Line 1 PDG 13 energy 1.10566 [GeV] ... parent 0
+    |- Line 2 PDG 13 energy 1.10566 [GeV] ... parent 0
+    |- Line 3 PDG 13 energy 1.10566 [GeV] ... parent 0
+    |- Line 4 PDG 13 energy 1.10566 [GeV] ... parent 0
+
+  ---- Line 5 PDG 39 energy 4.21234 [GeV] ... 4 children particles
+    |- Line 6 PDG 11 energy 1.00051 [GeV] ... parent 5
+    |- Line 7 PDG 13 energy 1.10566 [GeV] ... parent 5
+    |- Line 8 PDG 13 energy 1.10566 [GeV] ... parent 5
+    |- Line 9 PDG 11 energy 1.00051 [GeV] ... parent 5
+
+  ---- Line 10 PDG 13 energy 0.297561 [GeV]
+
+  ---- Line 11 PDG 2212 energy 0.950469 [GeV]
+
+  ---- Line 12 PDG 2212 energy 1.26875 [GeV]
+
+  ---- Line 13 PDG 13 energy 1.00256 [GeV]
+
+  ---- Line 14 PDG 13 energy 0.246352 [GeV]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "DeepLearnPhysics/DLPGenerator",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="Introduction.html" title="previous page">Getting started</a>
+    <a class='right-next' id="next-link" href="Validation.html" title="next page">Validating the output</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By SLAC Neutrino Group<br/>
+        
+            &copy; Copyright 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  
+  </body>
+</html>

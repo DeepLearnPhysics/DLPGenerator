@@ -1,0 +1,660 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Getting started &#8212; DLP Event Generator</title>
+    
+  <link href="_static/css/theme.css" rel="stylesheet" />
+  <link href="_static/css/index.c5995385ac14fb8791e8eb36b4908be2.css" rel="stylesheet" />
+
+    
+  <link rel="stylesheet"
+    href="_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+
+    
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/sphinx-book-theme.acff12b8f9c144ce68a297486a2fa670.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    
+  <link rel="preload" as="script" href="_static/js/index.1c5a1a01449ed65a7b51.js">
+
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/togglebutton.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="_static/sphinx-book-theme.12a9622fbb08dcb3a2a40b2c02b83a57.js"></script>
+    <script async="async" src="https://unpkg.com/thebelab@latest/lib/index.js"></script>
+    <script >
+        const thebe_selector = ".thebe,.cell"
+        const thebe_selector_input = "pre,.cell_input div.highlight"
+        const thebe_selector_output = ".output,.cell_output"
+    </script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuring ParticleBomb" href="Configuration.html" />
+    <link rel="prev" title="DLP Event Generator" href="index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+    <a class="navbar-brand text-wrap" href="index.html">
+      
+      <img src="_static/bomb.jpg" class="logo" alt="logo">
+      
+      
+      <h1 class="site-logo" id="site-title">DLP Event Generator</h1>
+      
+    </a>
+</div><form class="bd-search d-flex align-items-center" action="search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search this book..." aria-label="Search this book..." autocomplete="off" >
+</form><nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+    <div class="bd-toc-item active">
+        <ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="index.html">
+   DLP Event Generator
+  </a>
+ </li>
+</ul>
+<p class="caption">
+ <span class="caption-text">
+  ParticleBomb
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Getting started
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="Configuration.html">
+   Configure the generator
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="Validation.html">
+   Looking at the output
+  </a>
+ </li>
+</ul>
+
+    </div>
+</nav> <!-- To handle the deprecated key -->
+
+<div class="navbar_extra_footer">
+  Powered by <a href="https://jupyterbook.org">Jupyter Book</a>
+</div>
+
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        <a class="dropdown-buttons"
+            href="_sources/Introduction.ipynb"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download notebook file" data-toggle="tooltip"
+                data-placement="left">.ipynb</button></a>
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="_sources/Introduction.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Connect with source repository"><i class="fab fa-github"></i></button>
+    <div class="dropdown-buttons sourcebuttons">
+        <a class="repository-button"
+            href="https://github.com/DeepLearnPhysics/DLPGenerator"><button type="button" class="btn btn-secondary topbarbtn"
+                data-toggle="tooltip" data-placement="left" title="Source repository"><i
+                    class="fab fa-github"></i>repository</button></a>
+        <a class="issues-button"
+            href="https://github.com/DeepLearnPhysics/DLPGenerator/issues/new?title=Issue%20on%20page%20%2FIntroduction.html&body=Your%20issue%20content%20here."><button
+                type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip" data-placement="left"
+                title="Open an issue"><i class="fas fa-lightbulb"></i>open issue</button></a>
+        
+    </div>
+</div>
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+
+<a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+        data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+        title="Fullscreen mode"><i
+            class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn"
+        aria-label="Launch interactive content"><i class="fas fa-rocket"></i></button>
+    <div class="dropdown-buttons">
+        
+        <a class="binder-button" href="https://mybinder.org/v2/gh/DeepLearnPhysics/DLPGenerator/master?urlpath=tree/Introduction.md"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Launch Binder" data-toggle="tooltip"
+                data-placement="left"><img class="binder-button-logo"
+                    src="_static/images/logo_binder.svg"
+                    alt="Interact on binder">Binder</button></a>
+        
+        
+        
+        <button type="button" class="btn btn-secondary topbarbtn"
+            onclick="initThebeSBT()" title="Launch Thebe" data-toggle="tooltip" data-placement="left"><i
+                class="fas fa-play"></i><span style="margin-left: .4em;">Live Code</span></button>
+        
+    </div>
+</div>
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+            <div class="tocsection onthispage pt-5 pb-3">
+                <i class="fas fa-list"></i> Contents
+            </div>
+            <nav id="bd-toc-nav">
+                <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#what-is-an-event-generator">
+   What is an event generator?
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#how-to-use-particlebomb">
+   How to use ParticleBomb
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#step-1-instantiate-and-configure">
+     Step 1: instantiate and configure
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#step-2-run-the-generator">
+     Step 2: run the generator
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#before-step-3-hepevt-format">
+   Before step-3 … HEPEVT format
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#step-3-converting-into-hepevt-like-format">
+   Step-3: converting into HEPEVT-like format
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reproducibility-seed">
+   Reproducibility (seed)
+  </a>
+ </li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="getting-started">
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>This note covers a brief overview of running <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code>  event generator (<a class="reference external" href="https://github.com/DeepLearnPhysics/EventGenerator">repository</a>), which is used for generating simulation samples to train data reconstruction models in <code class="docutils literal notranslate"><span class="pre">lartpc_mlreco3d</span></code> package (<a class="reference external" href="https://github.com/DeepLearnPhysics/lartpc_mlreco3d">repository</a>).</p>
+<div class="section" id="what-is-an-event-generator">
+<h2>What is an event generator?<a class="headerlink" href="#what-is-an-event-generator" title="Permalink to this headline">¶</a></h2>
+<p>In case you are not familiar with the term <em>event generator</em>, in High Energy Physics (HEP) experiments, an event generator is the first step of a simulation chain which consists of 3 major steps.</p>
+<ol class="simple">
+<li><p><strong>Event Generator</strong> … generates a list of particles that will interact with an experiment detector. There are many event generators out there (e.g. GENIE, GLOBUS, GIBU, …) but they all do the same: generate a list of particles.</p></li>
+<li><p><strong>Particle Tracking</strong> … takes the output of 1 (i.e. a list of particles), and simulate how each particle interacts with the detector medium. For this stage, almost all HEP experiments use a software called Geant4, which contains detailed physics models of how all kinds of particles interact with all kinds of materials. The output of Geant4 is energy deposition information in the form of a particle trajectory. For instance, if your event generator provide 1 muon as an input to this stage of simulation, Geant4 simulates how this muon go through all kinds of micro-physics processes such as multiple coulomb scattering, radiation of another particle, an interaction with electromagnetic field, a decay, energy deposition along its trajectory in a medium, etc..</p></li>
+<li><p><strong>Detector response</strong> … takes the energy deposition information from Geant4, and simulates how your detector respond to them. This may include how your detector signal is created (e.g. for LArTPC, this might be ionization electrons and scintillation photons), how those signal propagate to sensitive detector electronics, and how those electronics respond to the signal. The output of this stage mimics the data that is recorded by your detector.</p></li>
+</ol>
+</div>
+<div class="section" id="how-to-use-particlebomb">
+<h2>How to use ParticleBomb<a class="headerlink" href="#how-to-use-particlebomb" title="Permalink to this headline">¶</a></h2>
+<p>This event generator can be run in 2+1 steps.</p>
+<ol class="simple">
+<li><p>Instantiate and configure</p></li>
+<li><p>Generate particles</p></li>
+<li><p>Convert into HEPEVT-like format (optional)</p></li>
+</ol>
+<p>The generation is done after the 2nd step. The 3rd step is optional to convert the results into a HEPEVT-friendly format, which is used to feed the output of this generator into the next step of simulation = particle tracking using Geant4. We go over the HEPEVT format later in this note.</p>
+<div class="section" id="step-1-instantiate-and-configure">
+<h3>Step 1: instantiate and configure<a class="headerlink" href="#step-1-instantiate-and-configure" title="Permalink to this headline">¶</a></h3>
+<p>The event generator package provides a utility Python function called <code class="docutils literal notranslate"><span class="pre">create_generator</span></code>. This function consumes a formatted configuration (Python <code class="docutils literal notranslate"><span class="pre">dict</span></code>), then create a <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> instance with the configuration parameters applied.</p>
+<p>In this note, we don’t go over the configuration format. That will be <a class="reference internal" href="Configuration.html"><span class="doc std std-doc">the next section</span></a>. For now, we use an example configuration provided by the package.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">dlp_generator</span> <span class="kn">import</span> <span class="n">create_generator</span><span class="p">,</span> <span class="n">EXAMPLE_CONFIG</span>
+
+<span class="c1"># parse configuration</span>
+<span class="n">cfg</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">EXAMPLE_CONFIG</span><span class="p">,</span> <span class="n">Loader</span><span class="o">=</span><span class="n">yaml</span><span class="o">.</span><span class="n">Loader</span><span class="p">)</span>
+
+<span class="c1"># create and configure a generator</span>
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Welcome to JupyROOT 6.22/09
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="step-2-run-the-generator">
+<h3>Step 2: run the generator<a class="headerlink" href="#step-2-run-the-generator" title="Permalink to this headline">¶</a></h3>
+<p>Just call <code class="docutils literal notranslate"><span class="pre">Generate</span></code> function :)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># run the generator</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Yep, that’s it! But yeah, we don’t feel like this meant anything real. So let’s try one more time. This time, we enable a <code class="docutils literal notranslate"><span class="pre">Debug</span></code> flag so that the generator prints out some information as it runs.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the Debug flag to True in the configuration</span>
+<span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;Debug&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="c1"># create and configure a generator</span>
+<span class="n">gen</span> <span class="o">=</span> <span class="n">create_generator</span><span class="p">(</span><span class="n">cfg</span><span class="p">)</span>
+
+<span class="c1"># run</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ParticleBomb created with SEED 191001214
+
+Running a new generation...
+
+
+Interaction config 0 multiplicity: 1
+
+  Generating an interaction 0 with 3 particles...
+  Vertex at (58.8441,64.2406,38.0656) [mm] ... time @ 9.21129 [ns]
+  Adding a virtual root particle (Graviton PDG 39)
+
+    New particle PDG 13 Mass 0.105658 [GeV/c**2]
+    Direction : (-0.281077,0.306403,-0.909457)
+    Momentum  : 0.877377 [GeV/c]
+    Energy    : 0.883716 [GeV/c**2]
+
+    New particle PDG 111 Mass 0.134977 [GeV/c**2]
+    Direction : (0.024766,0.776532,-0.629591)
+    Momentum  : 0.873898 [GeV/c]
+    Energy    : 0.884261 [GeV/c**2]
+
+    New particle PDG 111 Mass 0.134977 [GeV/c**2]
+    Direction : (0.210134,0.134103,-0.968432)
+    Momentum  : 0.238619 [GeV/c]
+    Energy    : 0.27415 [GeV/c**2]
+
+
+Interaction config 1 multiplicity: 1
+
+  Generating an interaction 0 with 4 particles...
+  Vertex at (2.62791,83.9522,45.5753) [mm] ... time @ 2.6597 [ns]
+
+    New particle PDG 13 Mass 0.105658 [GeV/c**2]
+    Direction : (-0.660945,-0.514133,-0.546643)
+    Momentum  : 1.10047 [GeV/c]
+    Energy    : 1.10553 [GeV/c**2]
+
+    New particle PDG 11 Mass 0.000510999 [GeV/c**2]
+    Direction : (0.19581,-0.926872,0.320259)
+    Momentum  : 0.395075 [GeV/c]
+    Energy    : 0.395075 [GeV/c**2]
+
+    New particle PDG 13 Mass 0.105658 [GeV/c**2]
+    Direction : (0.532528,0.804466,-0.263152)
+    Momentum  : 1.04484 [GeV/c]
+    Energy    : 1.05017 [GeV/c**2]
+
+    New particle PDG 13 Mass 0.105658 [GeV/c**2]
+    Direction : (0.793337,0.544652,-0.271976)
+    Momentum  : 0.685921 [GeV/c]
+    Energy    : 0.694011 [GeV/c**2]
+</pre></div>
+</div>
+</div>
+</div>
+<p>… and now we can see information about particles generated. It feels a bit more real :) In the above example, we set the debug flag in the configuration dictionary. Another way to set/unset is to simply call an attribute function of the generator.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gen</span><span class="o">.</span><span class="n">Debug</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="before-step-3-hepevt-format">
+<h2>Before step-3 … HEPEVT format<a class="headerlink" href="#before-step-3-hepevt-format" title="Permalink to this headline">¶</a></h2>
+<p>A HEPEVT format is a way to list necessary information about particles to be simulated by Geant4, and it’s pretty simple. For each particle, 15 values are recorded. It’s actually an ASCII text file listing 15 values (=one particle information) per line. Values are separated by a space. Here’re the list of values contained:</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">status</span> <span class="pre">code</span></code> … 1 = feed in Geant4, other values mean don’t track (but useful for the record)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PDG</span> <span class="pre">code</span></code> … an identifier for a type of a particle. See <a class="reference external" href="https://pdg.lbl.gov/2007/reviews/montecarlorpp.pdf">this reference</a> to decode.</p></li>
+<li><p>Line number of the first parent particle (0 for initial entries)</p></li>
+<li><p>Line number of the second parent particle</p></li>
+<li><p>Line number of the first child particle</p></li>
+<li><p>Line number of the last child particle</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> momentum [GeV/c]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y</span></code> momentum [GeV/c]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">z</span></code> momentum [GeV/c]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">energy</span></code> [GeV]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mass</span></code> [GeV/c^2]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> position [mm]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y</span></code> position [mm]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">z</span></code> position [mm]</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">time</span></code> [ns]</p></li>
+</ol>
+<p>For example, let’s consider 2 particles:</p>
+<ul class="simple">
+<li><p>A muon at position (0,0,0), time=0, momentum (0,0,0) [GeV/c] with energy 105 GeV and mass 0.105 GeV/c^2</p></li>
+<li><p>A photon at position (1,1,1), time=0, momentum (1,0,0) with energy 1 GeV and mass 0 GeV/c^2</p></li>
+</ul>
+<p>The HEPEVT format would look like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="mi">1</span> <span class="mi">13</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">105</span> <span class="mi">105</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>
+<span class="mi">1</span> <span class="mi">22</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">1</span>   <span class="mi">0</span>   <span class="mi">1</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="step-3-converting-into-hepevt-like-format">
+<h2>Step-3: converting into HEPEVT-like format<a class="headerlink" href="#step-3-converting-into-hepevt-like-format" title="Permalink to this headline">¶</a></h2>
+<p>So we would like to convert the resulting list of particles into HEPEVT format. <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> provides a utility function called <code class="docutils literal notranslate"><span class="pre">Flatten</span></code> to do this.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert the result into HEPEVT-like format, which is an array of length-15-array</span>
+<span class="n">hepevt</span> <span class="o">=</span> <span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s loop over the list of particles and print out 15 attribute values</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">hepevt</span><span class="p">:</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">part</span><span class="p">:</span> <span class="n">line</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>3.0 39.0 0.0 0.0 1.0 3.0 -0.1748256942716093 0.9794408643543246 -1.5792221021301613 2.0421265939948103 0.0 58.844118962730676 64.24064919268643 38.065576928547564 9.211286770551714 
+1.0 13.0 0.0 0.0 0.0 0.0 -0.24661059670281213 0.2688313149753433 -0.7979373272008057 0.8837163874353892 0.105658 58.844118962730676 64.24064919268643 38.065576928547564 9.211286770551714 
+1.0 111.0 0.0 0.0 0.0 0.0 0.021642955460933394 0.6786100653347765 -0.5501981612020188 0.8842606207526356 0.134977 58.844118962730676 64.24064919268643 38.065576928547564 9.211286770551714 
+1.0 111.0 0.0 0.0 0.0 0.0 0.05014194697026945 0.03199948404420488 -0.2310866137273369 0.2741495858067855 0.134977 58.844118962730676 64.24064919268643 38.065576928547564 9.211286770551714 
+1.0 13.0 4.0 4.0 0.0 0.0 -0.7273510446945195 -0.5657885955670736 -0.6015643620489936 1.1055313526731765 0.105658 2.627906219459554 83.95223208791495 45.57534999327091 2.6596984489913917 
+1.0 11.0 5.0 5.0 0.0 0.0 0.07735971240874666 -0.3661837304675006 0.1265261156851653 0.39507488990483935 0.00051099891 2.627906219459554 83.95223208791495 45.57534999327091 2.6596984489913917 
+1.0 13.0 6.0 6.0 0.0 0.0 0.5564048120466765 0.8405357726260242 -0.27495069829673646 1.0501657961439175 0.105658 2.627906219459554 83.95223208791495 45.57534999327091 2.6596984489913917 
+1.0 13.0 7.0 7.0 0.0 0.0 0.544166469861037 0.37358854234820293 -0.18655425194072087 0.6940112735222964 0.105658 2.627906219459554 83.95223208791495 45.57534999327091 2.6596984489913917 
+</pre></div>
+</div>
+</div>
+</div>
+<p>OK that’s a nightmare (though you would need this for Geant4!). <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> also has a friendly function that prints out a formatted summary text showing a list of particle type and hierarchies.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># print out the hierarchy</span>
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">hepevt</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 8 particles...
+
+  ---- Line 0 PDG 39 energy 2.04213 [GeV] ... 3 children particles
+    |- Line 1 PDG 13 energy 0.883716 [GeV] ... parent 0
+    |- Line 2 PDG 111 energy 0.884261 [GeV] ... parent 0
+    |- Line 3 PDG 111 energy 0.27415 [GeV] ... parent 0
+
+  ---- Line 4 PDG 13 energy 1.10553 [GeV]
+
+  ---- Line 5 PDG 11 energy 0.395075 [GeV]
+
+  ---- Line 6 PDG 13 energy 1.05017 [GeV]
+
+  ---- Line 7 PDG 13 energy 0.694011 [GeV]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="reproducibility-seed">
+<h2>Reproducibility (seed)<a class="headerlink" href="#reproducibility-seed" title="Permalink to this headline">¶</a></h2>
+<p>Finally, when debugging, it’s often useful to have a full reproducibility. This is possible by creating a generator with a fixed random number seed. The seed used by the generator is printed out at the creation when you enable the debug mode. Or you can also just ask for it.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Seed:&#39;</span><span class="p">,</span><span class="n">gen</span><span class="o">.</span><span class="n">Seed</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Seed: 191001214
+</pre></div>
+</div>
+</div>
+</div>
+<p>If the seed is not provided by the configuration, or provided as a negative value, the generator uses the timestamp as a seed, which changes all the time, in order to avoid always generating the same set of particles. Let’s try running the generator twice with the time seed. We expect the generated particle list to be different.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gen</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+
+<span class="n">gen</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 9 particles...
+
+  ---- Line 0 PDG 39 energy 1.21141 [GeV] ... 3 children particles
+    |- Line 1 PDG 22 energy 0.149153 [GeV] ... parent 0
+    |- Line 2 PDG 211 energy 0.905686 [GeV] ... parent 0
+    |- Line 3 PDG 111 energy 0.156573 [GeV] ... parent 0
+
+  ---- Line 4 PDG 39 energy 1.85754 [GeV] ... 3 children particles
+    |- Line 5 PDG 22 energy 0.0222408 [GeV] ... parent 4
+    |- Line 6 PDG 2112 energy 0.976908 [GeV] ... parent 4
+    |- Line 7 PDG 111 energy 0.858392 [GeV] ... parent 4
+
+  ---- Line 8 PDG 13 energy 0.670584 [GeV]
+
+Dumping hierarchy information for 11 particles...
+
+  ---- Line 0 PDG 39 energy 3.21954 [GeV] ... 3 children particles
+    |- Line 1 PDG 2112 energy 1.41252 [GeV] ... parent 0
+    |- Line 2 PDG -211 energy 0.889894 [GeV] ... parent 0
+    |- Line 3 PDG 13 energy 0.917127 [GeV] ... parent 0
+
+  ---- Line 4 PDG 39 energy 2.37949 [GeV] ... 3 children particles
+    |- Line 5 PDG 111 energy 0.52242 [GeV] ... parent 4
+    |- Line 6 PDG 13 energy 0.84633 [GeV] ... parent 4
+    |- Line 7 PDG 111 energy 1.01074 [GeV] ... parent 4
+
+  ---- Line 8 PDG 13 energy 0.799991 [GeV]
+
+  ---- Line 9 PDG 13 energy 0.86036 [GeV]
+
+  ---- Line 10 PDG 13 energy 0.324973 [GeV]
+</pre></div>
+</div>
+</div>
+</div>
+<p>When we debug the code, on the other hand, we often want to test the code behavior against a specific (fixed) state. We want a predictability in the output (to make sure it’s working). For this, you can set the seed and have a reproducible set of particles.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gen</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+
+<span class="n">gen</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">gen</span><span class="o">.</span><span class="n">PrintHierarchy</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">gen</span><span class="o">.</span><span class="n">Generate</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dumping hierarchy information for 7 particles...
+
+  ---- Line 0 PDG 39 energy 1.25777 [GeV] ... 3 children particles
+    |- Line 1 PDG -211 energy 0.229023 [GeV] ... parent 0
+    |- Line 2 PDG 11 energy 0.41918 [GeV] ... parent 0
+    |- Line 3 PDG 111 energy 0.609571 [GeV] ... parent 0
+
+  ---- Line 4 PDG 13 energy 0.895864 [GeV]
+
+  ---- Line 5 PDG 13 energy 0.504029 [GeV]
+
+  ---- Line 6 PDG 13 energy 0.994078 [GeV]
+
+Dumping hierarchy information for 7 particles...
+
+  ---- Line 0 PDG 39 energy 1.25777 [GeV] ... 3 children particles
+    |- Line 1 PDG -211 energy 0.229023 [GeV] ... parent 0
+    |- Line 2 PDG 11 energy 0.41918 [GeV] ... parent 0
+    |- Line 3 PDG 111 energy 0.609571 [GeV] ... parent 0
+
+  ---- Line 4 PDG 13 energy 0.895864 [GeV]
+
+  ---- Line 5 PDG 13 energy 0.504029 [GeV]
+
+  ---- Line 6 PDG 13 energy 0.994078 [GeV]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Hopefully this note helped you to learn how to run the <code class="docutils literal notranslate"><span class="pre">ParticleBomb</span></code> event generator. In the next section, we go over how to configure the generator so that we can dictate what kind of particles to be generated.</p>
+</div>
+</div>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "DeepLearnPhysics/DLPGenerator",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            kernelName: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">DLP Event Generator</a>
+    <a class='right-next' id="next-link" href="Configuration.html" title="next page">Configuring ParticleBomb</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+          By SLAC Neutrino Group<br/>
+        
+            &copy; Copyright 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+  
+  <script src="_static/js/index.1c5a1a01449ed65a7b51.js"></script>
+
+  
+  </body>
+</html>
