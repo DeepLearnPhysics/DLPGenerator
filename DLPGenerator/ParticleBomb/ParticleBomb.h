@@ -43,6 +43,8 @@ namespace DLPGenerator {
     /// Default destructor
     ~ParticleBomb(){}
 
+    /// returns the state: true = ready to Generate(), false = not (yet configured)
+    bool Configured() const { return _configured; }
     /// returns seed
     unsigned int Seed() const { return _seed; }
     /// sets seed
@@ -52,7 +54,7 @@ namespace DLPGenerator {
     /// Clears configuration
     void   Clear() { _param_v.clear(); _configured=false;}
     /// Add configuration
-    void   Add(GenParamInteraction param);
+    int    Add(GenParamInteraction param);
     /// A sampler from uniform distribution
     double flat_dfire(double vmin, double vmax);
     /// A sampler from uniform distribution

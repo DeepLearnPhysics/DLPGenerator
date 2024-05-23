@@ -12,7 +12,7 @@ namespace DLPGenerator {
     	_engine = std::mt19937_64(_seed);  
 	}
 
-    void   ParticleBomb::Add(DLPGenerator::GenParamInteraction param) {
+    int   ParticleBomb::Add(DLPGenerator::GenParamInteraction param) {
 
     	// Sanity check
     	try {
@@ -22,15 +22,43 @@ namespace DLPGenerator {
 			if(param.yrange[0]>param.yrange[1]) throw 4;
 			if(param.zrange[0]>param.zrange[1]) throw 5;
 			if(param.trange[0]>param.trange[1]) throw 6;
+
+			if(_debug) {
+				std::cout << "[ParticleBomb] X: [" << param.xrange[0] << " : " << param.xrange[1] << "]"
+				<< " Y: [" << param.yrange[0] << " : " << param.yrange[1] << "]"
+				<< " Z: [" << param.zrange[0] << " : " << param.zrange[1] << "]"
+				<< " T: [" << param.trange[0] << " : " << param.trange[1] << "]"
+				<< std::endl
+				<< "[ParticleBomb] Event    Multiplicity: [" << param.num_event[0] << " : " << param.num_event[1] << "]"
+				<< std::endl
+				<< "[ParticleBomb] Particle Multiplicity: [" << param.num_particle[0] << " : " << param.num_particle[1] << "]"
+				<< std::endl;
+			}
+
 			if(param.part_param_v.empty()) throw 7;
+			int ctr = 0;
 			for(auto const& part : param.part_param_v) {
-				if(part.multi[0]>part.multi[1]) throw 8;
-				if(part.kerange[0]>part.kerange[1]) throw 9;
-				if(part.weight<0) throw 10;
+				if(part.phi_range[0]  >part.phi_range[1]   || part.phi_range[0]  <0 || part.phi_range[1]   > M_2PI ) throw 8;
+				if(part.theta_range[0]>part.theta_range[1] || part.theta_range[0]<0 || part.theta_range[1] > M_PI  ) throw 9;
+				if(part.multi[0]>part.multi[1]) throw 10;
+				if(part.kerange[0]>part.kerange[1]) throw 11;
+				if(part.weight<0) throw 12;
+				if(_debug) {
+					std::cout << "[ParticleBomb] Particle " << ctr
+					<< std::endl
+					<< "[ParticleBomb]     KE [" << part.kerange[0] << " : " << part.kerange[1] << "]"
+					<< " Phi [" << part.phi_range[0] << " : " << part.phi_range[1] << "]"
+					<< " Theta [" << part.theta_range[0] << " : " << part.theta_range[1] << "]"
+					<< std::endl
+					<< "[ParticleBomb]     Multiplicity [" << part.multi[0] << " : " << part.multi[1] << "]"
+					<< " Weight " << part.weight
+					<< std::endl;
+				}
+				ctr++;
 			}
 		} catch (int error_code) {
-			std::cerr << "Error in one of parameters: error code " << error_code << std::endl;
-			std::cout << "Error codes meaning below...." << std::endl
+			std::cerr << "[ParticleBomb] Error in one of parameters: error code " << error_code << std::endl;
+			std::cerr << "[ParticleBomb] Error codes meaning below...." << std::endl
 			<< "  1  ... number of event is negative or the range is invalid" << std::endl
 			<< "  2  ... number of particles per event is negative or the range is invalid " << std::endl
 			<< "  3  ... the x range is invalid " << std::endl
@@ -38,13 +66,16 @@ namespace DLPGenerator {
 			<< "  5  ... the z range is invalid " << std::endl
 			<< "  6  ... the t range is invalid " << std::endl
 			<< "  7  ... the particle parameter list is empty" << std::endl
-			<< "  8  ... the range of particle multiplicity per config is negative or the range is invalid " << std::endl
-			<< "  9  ... the kinetic energy range is invalid" << std::endl
-			<< "  10 ... the weight is negative value (invalid)" << std::endl;
-			return;
+			<< "  8  ... the phi   range is invalid " << std::endl
+			<< "  9  ... the theta range is invalid " << std::endl
+			<< "  10 ... the range of particle multiplicity per config is negative or the range is invalid " << std::endl
+			<< "  11 ... the kinetic energy range is invalid" << std::endl
+			<< "  12 ... the weight is negative value (invalid)" << std::endl;
+			return error_code;
 		}
 		_configured = true;
 		_param_v.push_back(param);
+		return 0;
     }
 
     std::vector<std::array<double,15> > 
@@ -78,7 +109,7 @@ namespace DLPGenerator {
     void ParticleBomb::PrintHierarchy(const std::vector<std::array<double,15> >& particles) const 
     {
 
-    	std::cout<< "Dumping hierarchy information for " << particles.size() << " particles..." << std::endl;
+    	std::cout<< "[ParticleBomb] Dumping hierarchy information for " << particles.size() << " particles..." << std::endl;
     	  	for(size_t idx=0; idx<particles.size(); ++idx) {
     		auto const& part = particles[idx];
     		if(idx == part[2]) {
@@ -116,11 +147,11 @@ namespace DLPGenerator {
 
 		// make sure the generator is configured
 		if (!_configured) {
-			std::cerr << "Parameters not yet configured..." << std::endl;
+			std::cerr << "[ParticleBomb] Parameters not yet configured..." << std::endl;
 			return result;
 		}
 
-	    if(_debug>0) std::cout << "Running a new generation..." << std::endl;
+	    if(_debug>0) std::cout << "[ParticleBomb] Running a new generation..." << std::endl;
 
 
 		for(size_t cfg_idx=0; cfg_idx < _param_v.size(); ++cfg_idx) {
@@ -131,7 +162,7 @@ namespace DLPGenerator {
 			const int num_int = this->flat_ifire(int_param.num_event[0],int_param.num_event[1]);
 
 			if(_debug) std::cout << std::endl << std::endl
-				<< "Interaction config " << cfg_idx 
+				<< "[ParticleBomb] Interaction config " << cfg_idx 
 				<< " multiplicity: " << num_int << std::endl;
 
 
@@ -142,7 +173,7 @@ namespace DLPGenerator {
 				// Decide number of particles to be generated
 			    int num_part = this->flat_ifire(int_param.num_particle[0],int_param.num_particle[1]);
 
-			    if(_debug) std::cout << std::endl << "  Generating an interaction " << num_int_generated 
+			    if(_debug) std::cout << std::endl << "[ParticleBomb]   Generating an interaction " << num_int_generated 
 			    	<< " with " 
 			    	<< num_part << " particles..." << std::endl;
 
@@ -159,7 +190,7 @@ namespace DLPGenerator {
 
 			    // Add graviton as a virtual parent if requested
 			    if(int_param.add_root) {
-			    	if(_debug) std::cout << "  Adding a virtual root particle (Graviton PDG 39)" << std::endl;
+			    	if(_debug) std::cout << "[ParticleBomb]   Adding a virtual root particle (Graviton PDG 39)" << std::endl;
 			    	DLPGenerator::Particle graviton;
 			    	graviton.status_code = 3;
 			    	graviton.pdg_code = 39;
@@ -187,7 +218,7 @@ namespace DLPGenerator {
 					part.t = t;
 
 					if(_debug) std::cout << std::endl
-						<< "    New particle PDG " << part.pdg_code 
+						<< "[ParticleBomb]     New particle PDG " << part.pdg_code 
 						<< " Mass " << part.mass 
 						<< " [GeV/c**2]" << std::endl;
 
@@ -322,7 +353,7 @@ namespace DLPGenerator {
 
 
 		if(_debug>0) {
-		  std::cout << "  Vertex at (" 
+		  std::cout << "[ParticleBomb]   Vertex at (" 
 		  << x << "," << y << "," << z << ") [mm] ... time @ " << t << " [ns]" << std::endl;
 		}
 	}
@@ -339,17 +370,17 @@ namespace DLPGenerator {
 	    
 	    double mom_mag = sqrt(pow(part.energy,2) - pow(part.mass,2));
 
-	    double phi   = this->flat_dfire(0, 2 * 3.141592653589793238);
-	    double theta = this->flat_dfire(0, 1 * 3.141592653589793238);
+	    double phi   = this->flat_dfire(param.phi_range[0],param.phi_range[1]);
+	    double theta = this->flat_dfire(param.theta_range[0],param.theta_range[1]);
 	      
 	    part.px = cos(phi) * sin(theta);
 	    part.py = sin(phi) * sin(theta);
 	    part.pz = cos(theta);
 	    
 	    if(_debug)
-	        std::cout << "    Direction : (" << part.px << "," << part.py << "," << part.pz << ")" << std::endl
-	        << "    Momentum  : " << mom_mag << " [GeV/c]" << std::endl
-	        << "    Energy    : " << part.energy << " [GeV/c**2]" << std::endl;
+	        std::cout << "[ParticleBomb]     Direction : (" << part.px << "," << part.py << "," << part.pz << ")" << std::endl
+	        << "[ParticleBomb]     Momentum  : " << mom_mag << " [GeV/c]" << std::endl
+	        << "[ParticleBomb]     Energy    : " << part.energy << " [GeV/c**2]" << std::endl;
 	    part.px *= mom_mag;
 	    part.py *= mom_mag;
 	    part.pz *= mom_mag;

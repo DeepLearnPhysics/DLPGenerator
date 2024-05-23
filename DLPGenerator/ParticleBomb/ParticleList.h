@@ -17,15 +17,19 @@
 #include <vector>
 #include <array>
 #include <limits>
+#include <math.h>
 
 namespace DLPGenerator {
 
   static const double kINVALID_DOUBLE = std::numeric_limits<double>::max();
+  static const double M_2PI = M_PI * 2;
 
   struct GenParamParticle {
     std::vector<int       > pdg;     /// a list of possible PDG code of a particle for generation
     std::array <size_t, 2 > multi;   /// multiplicity of this particle instance
     std::array <double, 2 > kerange; /// range of kinetic energy (or momentum, depending on use_mom flag)
+    std::array <double, 2 > phi_range; /// range of the phi angle in radian 0=>2pi
+    std::array <double, 2 > theta_range; /// range of the theta angle in radian 0=>pi
     bool use_mom;  /// if true, kerange is interpreted as a momentum magnitude
     double weight; /// weight factor to produce this particle w.r.t. other instances
 
@@ -35,6 +39,9 @@ namespace DLPGenerator {
       for(auto& v : kerange) v = kINVALID_DOUBLE;
       use_mom = false;
       weight = -1;
+      phi_range[0]   = theta_range[0] = 0.;
+      phi_range[1]   = M_2PI;
+      theta_range[1] = M_PI;
     }
   };
 
