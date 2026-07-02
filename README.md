@@ -95,7 +95,7 @@ source setup.sh
 ```
 
 Published images are pushed to GitHub Container Registry as `ghcr.io/deeplearnphysics/dlpgen:<tag>` when a GitHub Release is published.
-If the GitHub release tag is prefixed with `v` (for example `v1.0.0`), the workflow also publishes a stripped semver image tag (`1.0.0`) so pulls match the convention used by other DeepLearnPhysics images.
+If the GitHub release tag is prefixed with `v` (for example `v1.0.0`), the published container tag is the stripped semver form (`1.0.0`) so pulls match the convention used by other DeepLearnPhysics images.
 
 ## CLI usage
 After `source setup.sh`, the repository exposes a `dlpgen` command from `bin/`. In the Docker image, the command is on `PATH` by default. The Python import path remains `dlp_generator`.
