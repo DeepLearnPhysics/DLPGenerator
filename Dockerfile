@@ -1,40 +1,44 @@
-FROM deeplearnphysics/dune-nd-sim:ub20.04-generator
+FROM rootproject/root:6.32.02-ubuntu22.04
 
-# ROOT
-ENV ROOTSYS=/app/root
-ENV PATH="${ROOTSYS}/bin:${PATH}"
-ENV LD_LIBRARY_PATH="${ROOTSYS}/lib:${LD_LIBRARY_PATH}"
-ENV PYTHONPATH="${ROOTSYS}/lib:${PYTHONPATH}"
+SHELL ["/bin/bash", "-lc"]
 
-# DLPGenerator
-ENV DLPGENERATOR_ROOT6=1
-ENV DLPGENERATOR_CXX=g++
-ENV DLPGENERATOR_DIR=/app/DLPGenerator
-ENV DLPGENERATOR_INCDIR="${DLPGENERATOR_DIR}/build/include"
-ENV DLPGENERATOR_BUILDDIR="${DLPGENERATOR_DIR}/build"
-ENV DLPGENERATOR_LIBDIR="${DLPGENERATOR_DIR}/build/lib"
-ENV LD_LIBRARY_PATH="${DLPGENERATOR_DIR}/build/lib:${LD_LIBRARY_PATH}"
-ENV PYTHONPATH="${DLPGENERATOR_DIR}/python:${PYTHONPATH}"
-RUN git clone https://github.com/DeepLearnPhysics/DLPGenerator.git /app/DLPGenerator && \
-    cd /app/DLPGenerator && \
-    make 
-
-ARG NB_USER=jovyan
+ARG DEBIAN_FRONTEND=noninteractive
+ARG NB_USER=dlp
 ARG NB_UID=1000
-ENV USER ${NB_USER}
-ENV NB_UID ${NB_UID}
-ENV HOME /home/${NB_USER}
+ARG NB_GID=1000
 
-RUN adduser --disabled-password \
-    --gecos "Default user" \
-    --uid ${NB_UID} \
-    ${NB_USER}
-    
-# Make sure the contents of our repo are in ${HOME}
-WORKDIR /app
-COPY . ${HOME}
-USER root
-RUN chown -R ${NB_UID} ${HOME}
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        python3 \
+        python3-numpy \
+        python3-yaml \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --gid ${NB_GID} ${NB_USER} \
+    && useradd --uid ${NB_UID} --gid ${NB_GID} --create-home --shell /bin/bash ${NB_USER}
+
+ENV DLPGENERATOR_DIR=/opt/DLPGenerator
+ENV DLPGENERATOR_BINDIR=${DLPGENERATOR_DIR}/bin
+ENV DLPGENERATOR_BUILDDIR=${DLPGENERATOR_DIR}/build
+ENV DLPGENERATOR_LIBDIR=${DLPGENERATOR_BUILDDIR}/lib
+ENV DLPGENERATOR_INCDIR=${DLPGENERATOR_BUILDDIR}/include
+ENV DLPGENERATOR_CXX=g++
+ENV DLPGENERATOR_CXXSTDFLAG=-std=c++17
+ENV LD_LIBRARY_PATH=
+ENV PATH=${DLPGENERATOR_BINDIR}:${PATH}
+ENV PYTHONPATH=${DLPGENERATOR_DIR}/python:${PYTHONPATH}
+ENV LD_LIBRARY_PATH=${DLPGENERATOR_LIBDIR}:${LD_LIBRARY_PATH}
+
+WORKDIR ${DLPGENERATOR_DIR}
+COPY . ${DLPGENERATOR_DIR}
+
+RUN source setup.sh \
+    && make \
+    && chmod +x ${DLPGENERATOR_BINDIR}/dlpgen \
+    && chown -R ${NB_UID}:${NB_GID} ${DLPGENERATOR_DIR}
+
 USER ${NB_USER}
+WORKDIR /home/${NB_USER}
 
-#ENV PYTHONPATH ${PYTHONPATH}:${HOME}/lartpc_mlreco3d
+CMD ["/bin/bash"]

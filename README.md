@@ -1,73 +1,169 @@
-# LiteFMWK
+# DLPGenerator
 
-`LiteFMWK` is a software development base that allows you to:
-* Generate a software _package_ where you can generate arbitrary number of C++ class/function and compile into 1 library
-* Automatically generate ROOT cling dictionary to access compiled class/function from cling/python interpreters (latter via PyROOT)
-* Support a structure for introducing inter-package dependencies
+[![Publish Docker Image](https://github.com/DeepLearnPhysics/DLPGenerator/actions/workflows/publish-docker.yml/badge.svg)](https://github.com/DeepLearnPhysics/DLPGenerator/actions/workflows/publish-docker.yml)
+[![GHCR Image](https://img.shields.io/badge/ghcr.io-deeplearnphysics%2Fdlpgen-blue)](https://github.com/DeepLearnPhysics/DLPGenerator/pkgs/container/dlpgen)
 
-## How to use it?
-Just try:
+`DLPGenerator` is a configurable particle event generator used to produce synthetic interaction topologies for simulation and downstream ML workflows. The core generator is the C++ class `DLPGenerator::ParticleBomb`, built with ROOT dictionary support so it can be driven from PyROOT and simple Python helpers.
+
+At a high level, the package lets you:
+* describe one or more interaction templates in YAML
+* sample particle content, positions, times, and kinetic energies from configurable ranges
+* run the generator from Python or the `dlpgen` CLI
+* export generated events as HEPEVT-like text, CSV with identifiers, or an `edep-sim` bomb macro
+
+## What the generator produces
+One call to `Generate()` returns one batch of generated interactions. A configuration can ask for a variable number of interactions per call via `NumEvent`, and each interaction can contain a variable number of particles selected from configured species and multiplicity ranges.
+
+The generator can then flatten that nested structure into the 15-column HEPEVT-like row format commonly used to hand particles to Geant-based simulation stages.
+
+## Requirements
+To build and run the native generator outside Docker, you need:
+* ROOT 6 with `root-config`, `rootcling`, and PyROOT available in your environment
+* a C++ compiler (`clang++` or `g++`)
+* Python 3
+* `PyYAML`
+* `NumPy` for the optional include-path helper used by `setup.sh`
+
+## Build in an environment that already has ROOT
+If you already have a working ROOT installation, the native build is short:
+
+```
+source /path/to/your/root/bin/thisroot.sh
+source setup.sh
+make
+```
+
+What this does:
+* `source setup.sh` checks that `rootcling` is on `PATH`
+* it exports `DLPGENERATOR_DIR`, `DLPGENERATOR_BINDIR`, `DLPGENERATOR_LIBDIR`, `PYTHONPATH`, and the shared-library search path
+* `make` builds the `ParticleBomb` package and ROOT dictionary into `build/`
+
+Useful follow-up commands:
+```
+dlpgen --help
+make clean
+```
+
+If `PyYAML` is missing, install it in the Python you plan to use for the CLI or Python bindings. If `rootcling` is missing, fix the ROOT environment first and then re-run `source setup.sh`.
+
+## Quick Python check
+After building, you can verify that the package imports and generates events:
+
+```
+python3 - <<'PY'
+import yaml
+from dlp_generator import create_generator, EXAMPLE_CONFIG
+
+cfg = yaml.load(EXAMPLE_CONFIG, Loader=yaml.Loader)
+gen = create_generator(cfg)
+result = gen.Generate()
+
+print(f"Generated {len(result)} interaction block(s)")
+print(f"Flattened particle count: {len(gen.Flatten(result))}")
+PY
+```
+
+## Running with Docker
+The repository includes a `Dockerfile` based on the official `rootproject/root` image so you can build and run the generator without installing ROOT directly on the host.
+
+Pull a published release image from GitHub Container Registry:
+```
+docker pull ghcr.io/deeplearnphysics/dlpgen:latest
+```
+
+Build the image from the repository root:
+```
+docker build -t dlpgen .
+```
+
+If you are building on Apple Silicon and want to match the upstream ROOT image architecture explicitly:
+```
+docker build --platform=linux/amd64 -t dlpgen .
+```
+
+Start an interactive container with the repository mounted at runtime:
+```
+docker run --rm -it \
+  -v "$PWD":/workspace/DLPGenerator \
+  -w /workspace/DLPGenerator \
+  dlpgen /bin/bash
+```
+
+Inside the container, source the setup script before using the Python module or the compiled library interactively:
 ```
 source setup.sh
 ```
-This sets up necessary shell env. variables. 
-You need to have `ROOT6` (if not, you get an error message from `setup.sh`).
-There's a support to detect `numpy` and provide a few handy compiler directives as well.
 
-## How to make a new _package_?
-Just try:
+Published images are pushed to GitHub Container Registry as `ghcr.io/deeplearnphysics/dlpgen:<tag>` when a GitHub Release is published.
+
+## CLI usage
+After `source setup.sh`, the repository exposes a `dlpgen` command from `bin/`. In the Docker image, the command is on `PATH` by default. The Python import path remains `dlp_generator`.
+
+Run a config and call the generator a fixed number of times, dumping the resulting rows in the default HEPEVT-like text format:
 ```
-gen_my_package Aho
-```
-... which will generate a directory named `Aho` under the repository top directory.
-A new package comes with `GNUmakefile` which allows you to compile a package by simply typing `make` in the package directory.
-You also find `sample.h` and `sample.cxx`. 
-These are very much empty C++ classes just to demonstrate that you can `make` and access them from an interpreter.
-```
-python -c "import ROOT;print ROOT.Aho.sample()"
+dlpgen my_config.yaml 10
 ```
 
-## Generating a new class
-In a package directory you can generate a new class. You can of course just type-it-up from scratch.
-You can also try:
+Write the dumped output to a file instead of stdout:
 ```
-gen_my_class Tako
-```
-... which generates `Tako.h` and `Tako.cxx` much like `sample` class.  Again, to compile, you can just type  `make`.
-
-If you have written your class from scratch, make sure you add your class to `LinkDef.h` if you want a dictionary generation (e.g. if you want an access from an interpreter).
-
-## Example?
-You can find an example in this branch:
-```
-git checkout example
+dlpgen my_config.yaml 10 --output events.hepevt
 ```
 
-## Compiling multiple packages
-No one wants to `cd` package directory and `make` for every package. You can utilize the top level `GNUmakefile` which is extremely simple and hopefully self-descriptive. All you need to do is to list (space-separated) packages in `SUBDIRS` variable.
+Emit CSV with a header and explicit identifiers for generator call, interaction, and particle row:
+```
+dlpgen my_config.yaml 10 --format csv --output events.csv
+```
 
-## Excluding a class from dictionary generation
-Sometimes you don't want to expose your C++ class to an interpreter.
-Assuming your C++ class is already registered in the dictionary (a mechanism to make your class available in an interpreter), simply exclude it from `LinkDef.h`.
+Emit an `edep-sim` bomb macro modeled on the production setup:
+```
+dlpgen my_config.yaml 10 --format bomb-macro --output g4.mac
+```
 
-If you wonder when you want to do it, here's some example reasons:
-* Compilation is so slow (auto-generated dictionary source code is usually _really_ long, like easily 10,000 lines, taking long time to compile)
-* Ugh I keep getting dictionary compilation error (auto-generation of dictionary source code is far from being perfect, especially for the latest C++ standards... if troublesome, exclude)
+Override the config seed or enable debug output:
+```
+dlpgen my_config.yaml 10 --seed 123 --debug
+```
 
-## Making inter-package dependencies
-To make one package depend on another, you typically want to know 2 information: headers to be included and libraries to be linked against.
-Here are two pieces of information you may find it useful/handy:
-*  Package libraries are compiled and available under `$MYSW_LIBDIR/libLiteFMWK_$(PACKAGE_NAME).so`
-*  Package header files are copied and available under `$MYSW_INCDIR/litefmwk/$(PACKAGE_NAME)`
-... where you substitute `$(PACKAGE_NAME)` with the actual name string.
+The positional count is the number of `Generate()` calls, not the number of interactions. If the config has `NumEvent: [1, 10]`, one call can emit between 1 and 10 interactions. In the default HEPEVT-like output, rows are dumped exactly as produced by that call and calls are separated by a blank line.
 
-With these info, you know what you need to do for your new package compilation that depends on those.
+In `bomb-macro` mode, the positional count is emitted as `/run/beamOn <count>`, which is the production-style mapping of one bomb generator invocation per Geant event. The production workflow uses one macro per job, not one macro per event.
 
-1. Add compiler flags
-  * `-I$(MYSW_INCDIR)`
-  * `-L$(MYSW_LIBDIR) -lLiteFMWK_$(PACKAGE_NAME).so`
-  
-2. Include statements in the source codes
-  * `#include "litefmwk/$(PACKAGE_NAME)/$(WANTED_HEADER)"`
-  * ... where `$(WANTED_HEADER)` is the header file you want (like `sample.h`).
+In CSV mode, each row includes a header plus these identifiers:
+* `call_id` = zero-based `Generate()` call index
+* `interaction_id` = zero-based interaction index within that call
+* `particle_id` = zero-based particle row index within the flattened call
+* `particle_in_interaction` = zero-based particle row index within that interaction
+
+## Python usage
+The helper `create_generator` parses a Python `dict` with the expected YAML structure and returns a configured `DLPGenerator.ParticleBomb` instance.
+
+```
+import yaml
+from dlp_generator import create_generator, EXAMPLE_CONFIG
+
+cfg = yaml.load(EXAMPLE_CONFIG, Loader=yaml.Loader)
+cfg['Debug'] = True
+
+gen = create_generator(cfg)
+batch = gen.Generate()
+hepevt_rows = gen.Flatten(batch)
+gen.PrintHierarchy(hepevt_rows)
+```
+
+## Configuration model
+Each top-level YAML key other than `SEED` and `Debug` is treated as an interaction block. An interaction block configures:
+* `NumEvent`: number of interactions to generate per `Generate()` call
+* `NumParticle`: total particle multiplicity range for an interaction
+* `XRange`, `YRange`, `ZRange`, `TRange`: uniform position and time ranges
+* `AddParent`: whether to add a synthetic parent/root particle
+* `Particles`: one or more particle templates
+
+Each particle template configures:
+* `PDG`: allowed PDG codes to sample from
+* `NumRange`: multiplicity range for that particle template
+* `KERange`: kinetic-energy range
+* `UseMom`: interpret the energy range as momentum instead of kinetic energy
+* `Weight`: relative sampling weight
+
+See the documentation notebooks in `book/Introduction.md` and `book/Configuration.md` for worked examples.
  
