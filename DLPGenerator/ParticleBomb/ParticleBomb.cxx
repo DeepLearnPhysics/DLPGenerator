@@ -1,10 +1,57 @@
 #ifndef __DLPGENERATOR_PARTICLEBOMB_CXX__
 #define __DLPGENERATOR_PARTICLEBOMB_CXX__
 
+#include <set>
+
 #include "ParticleBomb.h"
 #include "TDatabasePDG.h"
 
 namespace DLPGenerator {
+
+	namespace {
+
+		const double kProtonMassGeV = 0.9382720813;
+		const double kNeutronMassGeV = 0.9395654133;
+
+		bool DecodeIonPDG(int pdg, int& z, int& a)
+		{
+			const int abs_pdg = std::abs(pdg);
+			if(abs_pdg < 1000000000) return false;
+			if(abs_pdg / 1000000000 != 1) return false;
+
+			z = (abs_pdg / 10000) % 1000;
+			a = (abs_pdg / 10) % 1000;
+			return z > 0 && a >= z;
+		}
+
+		double NuclearMassGeV(int pdg)
+		{
+			static std::set<int> warned_pdg_v;
+
+			int z = 0;
+			int a = 0;
+			if(!DecodeIonPDG(pdg, z, a)) return kINVALID_DOUBLE;
+
+			if(warned_pdg_v.insert(pdg).second) {
+				std::cerr << "[ParticleBomb] Warning: PDG " << pdg
+					<< " is not in ROOT's particle database. Approximating ion mass as "
+					<< z << " proton(s) + " << a - z << " neutron(s); binding energy is ignored."
+					<< std::endl;
+			}
+
+			// ROOT's particle database does not always contain ions. Use a
+			// stable nuclear-mass estimate so valid ion PDG codes can generate.
+			return z * kProtonMassGeV + (a - z) * kNeutronMassGeV;
+		}
+
+		double ParticleMassGeV(int pdg)
+		{
+			auto particle = TDatabasePDG::Instance()->GetParticle(pdg);
+			if(particle) return particle->Mass();
+
+			return NuclearMassGeV(pdg);
+		}
+	}
 
 	void   ParticleBomb::Seed(int seed) 
 	{
@@ -43,6 +90,10 @@ namespace DLPGenerator {
 				if(part.multi[0]>part.multi[1]) throw 10;
 				if(part.kerange[0]>part.kerange[1]) throw 11;
 				if(part.weight<0) throw 12;
+				if(part.pdg.empty()) throw 13;
+				for(auto const& pdg : part.pdg) {
+					if(ParticleMassGeV(pdg) == kINVALID_DOUBLE) throw 14;
+				}
 				if(_debug) {
 					std::cout << "[ParticleBomb] Particle " << ctr
 					<< std::endl
@@ -70,7 +121,9 @@ namespace DLPGenerator {
 			<< "  9  ... the theta range is invalid " << std::endl
 			<< "  10 ... the range of particle multiplicity per config is negative or the range is invalid " << std::endl
 			<< "  11 ... the kinetic energy range is invalid" << std::endl
-			<< "  12 ... the weight is negative value (invalid)" << std::endl;
+			<< "  12 ... the weight is negative value (invalid)" << std::endl
+			<< "  13 ... the PDG code list is empty" << std::endl
+			<< "  14 ... a PDG code is not known to ROOT and is not a valid ion code" << std::endl;
 			return error_code;
 		}
 		_configured = true;
@@ -211,7 +264,7 @@ namespace DLPGenerator {
 		    	        part.pdg_code = part_param.pdg[this->flat_ifire(0,part_param.pdg.size()-1)];
 		    	    else
 		    	    	part.pdg_code = part_param.pdg[0];
-					part.mass = TDatabasePDG::Instance()->GetParticle(part.pdg_code)->Mass();
+					part.mass = ParticleMassGeV(part.pdg_code);
 					part.x = x;
 					part.y = y;
 					part.z = z;
