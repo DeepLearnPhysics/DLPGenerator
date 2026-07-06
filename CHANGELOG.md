@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.0.1 - 2026-07-06
+
+Patch release for ion PDG code generation.
+
+### Fixed
+* avoid segmentation faults when ROOT does not have an ion PDG entry in `TDatabasePDG`
+* approximate valid ion masses from proton and neutron counts so generation can continue
+* warn once per ion PDG when the fallback mass ignores nuclear binding energy
+* reject empty or unsupported PDG lists during generator configuration instead of failing during generation
+
 ## v1.0.0 - 2026-07-02
 
 Initial tagged release of DLPGenerator as a standalone ROOT-based particle generator package.
