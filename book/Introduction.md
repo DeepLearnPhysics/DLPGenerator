@@ -107,8 +107,9 @@ For example, let's consider 2 particles:
 * A muon at position (0,0,0), time=0, momentum (0,0,0) [GeV/c] with energy 105 GeV and mass 0.105 GeV/c^2
 * A photon at position (1,1,1), time=0, momentum (1,0,0) with energy 1 GeV and mass 0 GeV/c^2
 
-The HEPEVT format would look like this:
+The HEPEVT-like event block starts with the number of particles in the event, followed by one 15-value row per particle:
 ```
+2
 1 13 0 0 0 0 0 0 0 105 105 0 0 0 0
 1 22 0 0 0 0 1 0 0 1   0   1 1 1 0
 ```
@@ -167,5 +168,4 @@ gen.PrintHierarchy(gen.Flatten(gen.Generate()))
 ```
 
 Hopefully this note helped you to learn how to run the `ParticleBomb` event generator. In the next section, we go over how to configure the generator so that we can dictate what kind of particles to be generated.
-
 

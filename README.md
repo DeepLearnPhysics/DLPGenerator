@@ -100,7 +100,7 @@ If the GitHub release tag is prefixed with `v` (for example `v1.0.0`), the publi
 ## CLI usage
 After `source setup.sh`, the repository exposes a `dlpgen` command from `bin/`. In the Docker image, the command is on `PATH` by default. The Python import path remains `dlp_generator`.
 
-Run a config and call the generator a fixed number of times, dumping the resulting rows in the default HEPEVT-like text format:
+Run a config and call the generator a fixed number of times, dumping the resulting rows in the default HEPEVT-like text format. Each `Generate()` call is emitted as one event block: a particle-count header followed by 15-column particle rows.
 ```
 dlpgen my_config.yaml 10
 ```
@@ -125,7 +125,7 @@ Override the config seed or enable debug output:
 dlpgen my_config.yaml 10 --seed 123 --debug
 ```
 
-The positional count is the number of `Generate()` calls, not the number of interactions. If the config has `NumEvent: [1, 10]`, one call can emit between 1 and 10 interactions. In the default HEPEVT-like output, rows are dumped exactly as produced by that call and calls are separated by a blank line.
+The positional count is the number of `Generate()` calls, not the number of interactions. If the config has `NumEvent: [1, 10]`, one call can emit between 1 and 10 interactions. In the default HEPEVT-like output, all rows from one call are grouped under one particle-count header, and calls are separated by a blank line.
 
 In `bomb-macro` mode, the positional count is emitted as `/run/beamOn <count>`, which is the production-style mapping of one bomb generator invocation per Geant event. The production workflow uses one macro per job, not one macro per event.
 

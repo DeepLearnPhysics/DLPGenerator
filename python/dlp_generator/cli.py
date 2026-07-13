@@ -45,6 +45,7 @@ def _load_config(path):
 
 
 def _write_hepevt_call(output_stream, flattened_call):
+    output_stream.write(f"{len(flattened_call)}\n")
     for particle in flattened_call:
         output_stream.write(" ".join(_format_value(value) for value in particle))
         output_stream.write("\n")
@@ -106,7 +107,7 @@ def main(argv=None):
         "--format",
         choices=("hepevt", "csv", "bomb-macro"),
         default="hepevt",
-        help="Output format. 'hepevt' preserves the original 15-column dump, 'csv' adds row identifiers and a header, and 'bomb-macro' emits an edep-sim macro modeled on production bomb usage.",
+        help="Output format. 'hepevt' writes one particle-count header followed by 15-column rows per Generate() call, 'csv' adds row identifiers and a header, and 'bomb-macro' emits an edep-sim macro modeled on production bomb usage.",
     )
 
     args = parser.parse_args(argv)
