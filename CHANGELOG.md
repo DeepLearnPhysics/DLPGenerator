@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.1.1 - 2026-07-13
+
+Patch release for HEPEVT-like event block compatibility.
+
+### Fixed
+* add per-event particle-count headers to default HEPEVT-like CLI output
+* document that one `Generate()` call maps to one HEPEVT-like event block
+
 ## v1.1.0 - 2026-07-13
 
 Minor release for corrected angular generation.
