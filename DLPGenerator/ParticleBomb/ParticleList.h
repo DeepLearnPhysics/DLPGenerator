@@ -29,7 +29,7 @@ namespace DLPGenerator {
     std::array <size_t, 2 > multi;   /// multiplicity of this particle instance
     std::array <double, 2 > kerange; /// range of kinetic energy (or momentum, depending on use_mom flag)
     std::array <double, 2 > phi_range; /// range of the phi angle in radian 0=>2pi
-    std::array <double, 2 > theta_range; /// range of the theta angle in radian 0=>pi
+    std::array <double, 2 > theta_range; /// theta bounds in radian 0=>pi; sampled uniformly in cos(theta)
     bool use_mom;  /// if true, kerange is interpreted as a momentum magnitude
     double weight; /// weight factor to produce this particle w.r.t. other instances
 
@@ -84,4 +84,3 @@ namespace DLPGenerator {
 
 #endif
 /** @} */ // end of doxygen group 
-

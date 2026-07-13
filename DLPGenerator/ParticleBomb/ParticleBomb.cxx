@@ -423,12 +423,13 @@ namespace DLPGenerator {
 	    
 	    double mom_mag = sqrt(pow(part.energy,2) - pow(part.mass,2));
 
-	    double phi   = this->flat_dfire(param.phi_range[0],param.phi_range[1]);
-	    double theta = this->flat_dfire(param.theta_range[0],param.theta_range[1]);
+	    double phi = this->flat_dfire(param.phi_range[0],param.phi_range[1]);
+	    double cos_theta = this->flat_dfire(cos(param.theta_range[1]),cos(param.theta_range[0]));
+	    double sin_theta = sqrt(1. - pow(cos_theta,2));
 	      
-	    part.px = cos(phi) * sin(theta);
-	    part.py = sin(phi) * sin(theta);
-	    part.pz = cos(theta);
+	    part.px = cos(phi) * sin_theta;
+	    part.py = sin(phi) * sin_theta;
+	    part.pz = cos_theta;
 	    
 	    if(_debug)
 	        std::cout << "[ParticleBomb]     Direction : (" << part.px << "," << part.py << "," << part.pz << ")" << std::endl
