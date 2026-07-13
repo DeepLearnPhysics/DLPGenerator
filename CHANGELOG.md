@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.1.0 - 2026-07-13
+
+Minor release for corrected angular generation.
+
+### Changed
+* sample particle directions uniformly in solid angle by drawing `cos(theta)` uniformly within the configured theta bounds
+* update the `theta_range` documentation comment to make the angular sampling behavior explicit
+
 ## v1.0.1 - 2026-07-06
 
 Patch release for ion PDG code generation.
