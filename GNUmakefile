@@ -11,7 +11,7 @@ include $(DLPGENERATOR_DIR)/Makefile/Makefile.${OSNAME}
 
 SUBDIRS := ParticleBomb
 
-.phony: all clean
+.PHONY: all clean test
 
 all:
 	@echo "Start building..."
@@ -22,3 +22,5 @@ clean:
 	@for i in $(SUBDIRS); do ( echo "" && echo "Cleaning $$i..." && $(MAKE) clean --directory=DLPGenerator/$$i) || exit $$?; done
 	@echo "Done!"
 
+test: all
+	@python3 -m unittest discover -s test -v

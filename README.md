@@ -41,8 +41,12 @@ What this does:
 Useful follow-up commands:
 ```
 dlpgen --help
+make test
 make clean
 ```
+
+`make test` rebuilds the native library and runs the Python `unittest` suite
+through the public PyROOT interface.
 
 If `PyYAML` is missing, install it in the Python you plan to use for the CLI or Python bindings. If `rootcling` is missing, fix the ROOT environment first and then re-run `source setup.sh`.
 

@@ -83,14 +83,20 @@ namespace DLPGenerator {
 			}
 
 			if(param.part_param_v.empty()) throw 7;
+			size_t minimum_total = 0;
+			size_t selectable_maximum_total = 0;
 			int ctr = 0;
 			for(auto const& part : param.part_param_v) {
 				if(part.phi_range[0]  >part.phi_range[1]   || part.phi_range[0]  <0 || part.phi_range[1]   > M_2PI ) throw 8;
 				if(part.theta_range[0]>part.theta_range[1] || part.theta_range[0]<0 || part.theta_range[1] > M_PI  ) throw 9;
 				if(part.multi[0]>part.multi[1]) throw 10;
 				if(part.kerange[0]>part.kerange[1]) throw 11;
-				if(part.weight<0) throw 12;
+				if(!std::isfinite(part.weight) || part.weight<0) throw 12;
 				if(part.pdg.empty()) throw 13;
+				minimum_total += part.multi[0];
+				selectable_maximum_total += part.multi[0];
+				if(part.weight > 0.)
+					selectable_maximum_total += part.multi[1] - part.multi[0];
 				for(auto const& pdg : part.pdg) {
 					if(ParticleMassGeV(pdg) == kINVALID_DOUBLE) throw 14;
 				}
@@ -107,6 +113,8 @@ namespace DLPGenerator {
 				}
 				ctr++;
 			}
+			if(minimum_total > param.num_particle[0]) throw 15;
+			if(selectable_maximum_total < param.num_particle[1]) throw 16;
 		} catch (int error_code) {
 			std::cerr << "[ParticleBomb] Error in one of parameters: error code " << error_code << std::endl;
 			std::cerr << "[ParticleBomb] Error codes meaning below...." << std::endl
@@ -123,7 +131,9 @@ namespace DLPGenerator {
 			<< "  11 ... the kinetic energy range is invalid" << std::endl
 			<< "  12 ... the weight is negative value (invalid)" << std::endl
 			<< "  13 ... the PDG code list is empty" << std::endl
-			<< "  14 ... a PDG code is not known to ROOT and is not a valid ion code" << std::endl;
+			<< "  14 ... a PDG code is not known to ROOT and is not a valid ion code" << std::endl
+			<< "  15 ... required particle minima exceed the minimum particles per event" << std::endl
+			<< "  16 ... particle maxima and positive weights cannot fill the maximum particles per event" << std::endl;
 			return error_code;
 		}
 		_configured = true;
@@ -365,23 +375,47 @@ namespace DLPGenerator {
 	{
 	    
 	    std::vector<size_t> result;
+	    result.reserve(num_part);
 	    std::vector<size_t> gen_count_v(param_v.size(),0);
 	    std::vector<double> weight_v(param_v.size(),0);
-	    for(size_t idx=0; idx<param_v.size(); ++idx)
-	        weight_v[idx] = param_v[idx].weight;
+
+	    // Generate every configured minimum before filling the remaining slots
+	    // through weighted sampling. Add() has already checked that the minima
+	    // fit every possible interaction multiplicity.
+	    for(size_t idx=0; idx<param_v.size(); ++idx) {
+	        for(size_t count=0; count<param_v[idx].multi[0]; ++count) {
+	            result.push_back(idx);
+	            ++gen_count_v[idx];
+	        }
+	        if(gen_count_v[idx] < param_v[idx].multi[1])
+	            weight_v[idx] = param_v[idx].weight;
+	    }
 	    	    
-	    while(num_part) {
+	    while(result.size() < num_part) {
 	        
 	        double total_weight = 0;
 	        for(auto const& v : weight_v) total_weight += v;
 	        
-	        double rval = 0;
-	        rval = this->flat_dfire(0,total_weight);
+	        double rval = this->flat_dfire(0,total_weight);
 	        
-	        size_t idx = 0;
-	        for(idx = 0; idx < weight_v.size(); ++idx) {
-	            rval -= weight_v[idx];
-	            if(rval <=0.) break;
+	        size_t idx = weight_v.size();
+	        for(size_t candidate = 0; candidate < weight_v.size(); ++candidate) {
+	            if(weight_v[candidate] <= 0.) continue;
+	            if(rval < weight_v[candidate]) {
+	                idx = candidate;
+	                break;
+	            }
+	            rval -= weight_v[candidate];
+	        }
+
+	        // Guard against floating-point roundoff at the upper boundary.
+	        if(idx == weight_v.size()) {
+	            for(size_t candidate = weight_v.size(); candidate > 0; --candidate) {
+	                if(weight_v[candidate-1] > 0.) {
+	                    idx = candidate-1;
+	                    break;
+	                }
+	            }
 	        }
 	        
 	        // register to the output
@@ -391,8 +425,6 @@ namespace DLPGenerator {
 	        gen_count_v[idx] += 1;
 	        if(gen_count_v[idx] >= param_v[idx].multi[1])
 	            weight_v[idx] = 0.;
-	        
-	        --num_part;
 	    }
 	    return result;
 	}
