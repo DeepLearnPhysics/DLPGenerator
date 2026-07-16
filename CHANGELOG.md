@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.1.2 - 2026-07-16
+
+Patch release for particle multiplicity constraint handling.
+
+### Fixed
+* honor each particle template's minimum `NumRange` before weighted sampling
+* reject configurations whose required minima do not fit every possible interaction size
+* reject configurations that cannot reach the maximum interaction size using selectable particle templates
+* prevent zero-weight particle templates from being selected beyond their required minimum
+* expose installed ParticleBomb headers to ROOT so PyROOT dictionaries load in clean runtime environments
+
+### Added
+* add regression tests for particle multiplicity constraints and zero-weight behavior
+* run the test suite as part of release container builds so failures prevent publication
+
 ## v1.1.1 - 2026-07-13
 
 Patch release for HEPEVT-like event block compatibility.
