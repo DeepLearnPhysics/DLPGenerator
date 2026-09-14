@@ -11,6 +11,9 @@ def create_generator(cfg):
 	RETURN:
 	  ParticleBomb event generator with a configuration applied
 	'''
+	if 'InteractionSelection' in cfg:
+		from .interaction_selector import create_interaction_selector
+		return create_interaction_selector(cfg, create_generator)
 
 	# create ParticleBomb instance (optionally with SEED and Debug options)
 	gen = G.ParticleBomb(cfg.get('SEED',-1),cfg.get('Debug',False))
