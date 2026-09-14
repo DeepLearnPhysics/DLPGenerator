@@ -91,6 +91,7 @@ class ParticleMultiplicityTest(unittest.TestCase):
 def selected_config(seed=12345):
     def block(pdg):
         return {
+            "SelectionWeight": 1,
             "NumEvent": [1, 1],
             "NumParticle": [1, 1],
             "XRange": [0.0, 0.0],
@@ -112,7 +113,6 @@ def selected_config(seed=12345):
         "SEED": seed,
         "InteractionSelection": {
             "Mode": "weighted_random",
-            "Weights": {"CC": 1, "NC": 1},
         },
         "CC": block(11),
         "NC": block(211),
@@ -139,10 +139,10 @@ class InteractionSelectionTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r"NumEvent: \[1, 1\]"):
             create_generator(config)
 
-    def test_weights_must_name_every_block(self):
+    def test_every_block_requires_a_selection_weight(self):
         config = selected_config()
-        del config["InteractionSelection"]["Weights"]["NC"]
-        with self.assertRaisesRegex(ValueError, "must name every interaction block"):
+        del config["NC"]["SelectionWeight"]
+        with self.assertRaisesRegex(ValueError, "requires a finite, positive"):
             create_generator(config)
 
 

@@ -81,14 +81,10 @@ def create_interaction_selector(cfg, generator_factory):
         raise ValueError("InteractionSelection must be a mapping")
     if selection.get("Mode") != "weighted_random":
         raise ValueError("InteractionSelection Mode must be weighted_random")
-    weights = selection.get("Weights")
-    if not isinstance(weights, dict) or not weights:
-        raise ValueError("InteractionSelection Weights must be a nonempty mapping")
-    blocks = {key for key in cfg if key not in SPECIAL_KEYS}
-    if set(weights) != blocks:
-        raise ValueError(
-            "InteractionSelection Weights must name every interaction block"
-        )
+    blocks = [key for key in cfg if key not in SPECIAL_KEYS]
+    if not blocks:
+        raise ValueError("InteractionSelection requires interaction blocks")
+    weights = {name: cfg[name].get("SelectionWeight") for name in blocks}
     if any(
         isinstance(value, bool)
         or not isinstance(value, (int, float))
@@ -96,5 +92,8 @@ def create_interaction_selector(cfg, generator_factory):
         or value <= 0
         for value in weights.values()
     ):
-        raise ValueError("InteractionSelection weights must be finite and positive")
+        raise ValueError(
+            "every selected interaction block requires a finite, positive "
+            "SelectionWeight"
+        )
     return WeightedInteractionSelector(cfg, weights, generator_factory)

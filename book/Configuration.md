@@ -172,11 +172,11 @@ I hope the above examples were helpful to learn how to use the `ParticleBomb` ev
 * `SEED` ... this sets the random number generator's seed. `-1` will be a time-seed, suited for physics studies. For debugging, in order to have a reproducible behavior, give a positive integer.
 * `Debug` ... setting this `True` run the generator with more verbose mode, mainly for debugging purpose.
 * `InteractionSelection` ... optionally select exactly one named interaction
-  block per `Generate()` call. `Mode: weighted_random` accepts finite positive
-  `Weights`. Every call makes an independent counter-based draw reproducible
-  from `SEED`; frequencies approach the configured proportions over a large
-  sample without forcing alternation. Every selected block must set
-  `NumEvent: [1,1]`.
+  block per `Generate()` call. With `Mode: weighted_random`, every interaction
+  block supplies a finite positive `SelectionWeight`. Every call makes an
+  independent counter-based draw reproducible from `SEED`; frequencies approach
+  the configured proportions over a large sample without forcing alternation.
+  Every selected block must set `NumEvent: [1,1]`.
 
 These parameters should be specified at the root-level (see the example below). The last parameter is an important one and to be specified at the interaction configuration block.
 
