@@ -1,6 +1,7 @@
 import unittest
 
 from ROOT import DLPGenerator as G
+from dlp_generator.config_parser import create_generator
 
 
 def particle(pdg, multiplicity, weight=1.0):
@@ -85,6 +86,64 @@ class ParticleMultiplicityTest(unittest.TestCase):
         )
 
         self.assertEqual(generator.Add(config), 16)
+
+
+def selected_config(seed=12345):
+    def block(pdg):
+        return {
+            "NumEvent": [1, 1],
+            "NumParticle": [1, 1],
+            "XRange": [0.0, 0.0],
+            "YRange": [0.0, 0.0],
+            "ZRange": [0.0, 0.0],
+            "TRange": [0.0, 0.0],
+            "Particles": [
+                {
+                    "PDG": [pdg],
+                    "NumRange": [1, 1],
+                    "KERange": [0.0, 0.0],
+                    "UseMom": False,
+                    "Weight": 1,
+                }
+            ],
+        }
+
+    return {
+        "SEED": seed,
+        "InteractionSelection": {
+            "Mode": "weighted_random",
+            "Weights": {"CC": 1, "NC": 1},
+        },
+        "CC": block(11),
+        "NC": block(211),
+    }
+
+
+class InteractionSelectionTest(unittest.TestCase):
+    def test_equal_weight_draws_are_reproducible_and_statistically_balanced(self):
+        first = create_generator(selected_config())
+        second = create_generator(selected_config())
+        first_pdgs = [first.Generate()[0][0].pdg_code for _ in range(1000)]
+        second_pdgs = [second.Generate()[0][0].pdg_code for _ in range(1000)]
+
+        self.assertEqual(first_pdgs, second_pdgs)
+        self.assertGreater(first_pdgs.count(11), 450)
+        self.assertLess(first_pdgs.count(11), 550)
+        self.assertTrue(
+            any(first_pdgs[index] == first_pdgs[index + 1] for index in range(999))
+        )
+
+    def test_selected_blocks_must_each_generate_one_interaction(self):
+        config = selected_config()
+        config["CC"]["NumEvent"] = [1, 2]
+        with self.assertRaisesRegex(ValueError, r"NumEvent: \[1, 1\]"):
+            create_generator(config)
+
+    def test_weights_must_name_every_block(self):
+        config = selected_config()
+        del config["InteractionSelection"]["Weights"]["NC"]
+        with self.assertRaisesRegex(ValueError, "must name every interaction block"):
+            create_generator(config)
 
 
 if __name__ == "__main__":

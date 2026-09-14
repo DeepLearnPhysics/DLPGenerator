@@ -131,6 +131,32 @@ dlpgen my_config.yaml 10 --seed 123 --debug
 
 The positional count is the number of `Generate()` calls, not the number of interactions. If the config has `NumEvent: [1, 10]`, one call can emit between 1 and 10 interactions. In the default HEPEVT-like output, all rows from one call are grouped under one particle-count header, and calls are separated by a blank line.
 
+To emit exactly one interaction per call while drawing from a seeded mixture
+of interaction types, add weighted interaction selection:
+
+```yaml
+SEED: 12345
+InteractionSelection:
+  Mode: weighted_random
+  Weights:
+    CC: 1
+    NC: 1
+
+CC:
+  NumEvent: [1, 1]
+  # ...
+NC:
+  NumEvent: [1, 1]
+  # ...
+```
+
+Every call makes an independent weighted draw whose result is reproducible from
+`SEED`. The example therefore approaches 50% CC and 50% NC over a large sample
+while allowing consecutive calls of the same type. Selection uses its own
+counter-based stream, so interaction type is independent of the selected
+block's particle multiplicity. Selected blocks must use `NumEvent: [1, 1]`;
+this prevents the selector from reintroducing multiple interactions per call.
+
 In `bomb-macro` mode, the positional count is emitted as `/run/beamOn <count>`, which is the production-style mapping of one bomb generator invocation per Geant event. The production workflow uses one macro per job, not one macro per event.
 
 In CSV mode, each row includes a header plus these identifiers:
@@ -140,7 +166,11 @@ In CSV mode, each row includes a header plus these identifiers:
 * `particle_in_interaction` = zero-based particle row index within that interaction
 
 ## Python usage
-The helper `create_generator` parses a Python `dict` with the expected YAML structure and returns a configured `DLPGenerator.ParticleBomb` instance.
+The helper `create_generator` parses a Python `dict` with the expected YAML
+structure and returns a configured generator object. Ordinary configurations
+return `DLPGenerator.ParticleBomb`; configurations with `InteractionSelection`
+return an object exposing the same `Generate`, `Flatten`, `PrintHierarchy`,
+`Configured`, and `Seed` interface.
 
 ```
 import yaml
@@ -156,7 +186,8 @@ gen.PrintHierarchy(hepevt_rows)
 ```
 
 ## Configuration model
-Each top-level YAML key other than `SEED` and `Debug` is treated as an interaction block. An interaction block configures:
+Each top-level YAML key other than `SEED`, `Debug`, and the optional
+`InteractionSelection` mapping is treated as an interaction block. An interaction block configures:
 * `NumEvent`: number of interactions to generate per `Generate()` call
 * `NumParticle`: total particle multiplicity range for an interaction
 * `XRange`, `YRange`, `ZRange`, `TRange`: uniform position and time ranges

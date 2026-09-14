@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+* add an optional seeded `weighted_random` interaction selector
+* decouple interaction-type probabilities from particle multiplicity sampling
+* require selected interaction blocks to emit exactly one interaction per call
+
 ## v1.1.2 - 2026-07-16
 
 Patch release for particle multiplicity constraint handling.

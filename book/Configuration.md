@@ -171,8 +171,14 @@ I hope the above examples were helpful to learn how to use the `ParticleBomb` ev
 
 * `SEED` ... this sets the random number generator's seed. `-1` will be a time-seed, suited for physics studies. For debugging, in order to have a reproducible behavior, give a positive integer.
 * `Debug` ... setting this `True` run the generator with more verbose mode, mainly for debugging purpose.
+* `InteractionSelection` ... optionally select exactly one named interaction
+  block per `Generate()` call. `Mode: weighted_random` accepts finite positive
+  `Weights`. Every call makes an independent counter-based draw reproducible
+  from `SEED`; frequencies approach the configured proportions over a large
+  sample without forcing alternation. Every selected block must set
+  `NumEvent: [1,1]`.
 
-These two parameters should be specified at the root-level (see the example below). The last parameter is an important one and to be specified at the interaction configuration block.
+These parameters should be specified at the root-level (see the example below). The last parameter is an important one and to be specified at the interaction configuration block.
 
 
 * `AddParent` ... setting this `True` is recommended(!). When you generate multiple interactions where each interaction contains multiple particles, the output will be a flat list of all particles. It would be helpful if there can be a notion of "grouping" each interaction. When `AddParent` is set to `True`, a virtual parent particle is added to group those particles that belong to the same event. 
@@ -274,5 +280,3 @@ gen = create_generator( yaml.load(config_text, Loader=yaml.Loader) )
 
 gen.PrintHierarchy(gen.Flatten(gen.Generate()))
 ```
-
-
