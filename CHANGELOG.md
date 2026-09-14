@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## v1.2.0 - 2026-09-14
 
 ### Added
 * add an optional seeded `weighted_random` interaction selector
