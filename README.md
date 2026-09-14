@@ -138,14 +138,13 @@ of interaction types, add weighted interaction selection:
 SEED: 12345
 InteractionSelection:
   Mode: weighted_random
-  Weights:
-    CC: 1
-    NC: 1
 
 CC:
+  SelectionWeight: 1
   NumEvent: [1, 1]
   # ...
 NC:
+  SelectionWeight: 1
   NumEvent: [1, 1]
   # ...
 ```
@@ -156,6 +155,8 @@ while allowing consecutive calls of the same type. Selection uses its own
 counter-based stream, so interaction type is independent of the selected
 block's particle multiplicity. Selected blocks must use `NumEvent: [1, 1]`;
 this prevents the selector from reintroducing multiple interactions per call.
+Keeping `SelectionWeight` on each named block lets its probability travel with
+its independently configurable particle distribution.
 
 In `bomb-macro` mode, the positional count is emitted as `/run/beamOn <count>`, which is the production-style mapping of one bomb generator invocation per Geant event. The production workflow uses one macro per job, not one macro per event.
 
@@ -193,6 +194,8 @@ Each top-level YAML key other than `SEED`, `Debug`, and the optional
 * `XRange`, `YRange`, `ZRange`, `TRange`: uniform position and time ranges
 * `AddParent`: whether to add a synthetic parent/root particle
 * `Particles`: one or more particle templates
+* `SelectionWeight`: relative probability when root-level
+  `InteractionSelection` is enabled
 
 Each particle template configures:
 * `PDG`: allowed PDG codes to sample from

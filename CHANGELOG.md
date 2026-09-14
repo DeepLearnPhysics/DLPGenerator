@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 * add an optional seeded `weighted_random` interaction selector
+* configure mixture weights alongside their named interaction blocks
 * decouple interaction-type probabilities from particle multiplicity sampling
 * require selected interaction blocks to emit exactly one interaction per call
 
