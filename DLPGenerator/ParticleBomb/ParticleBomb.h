@@ -73,8 +73,22 @@ namespace DLPGenerator {
                                     const std::vector<GenParamParticle> param_v);
     /// Determines a particle position (uniform sampling)
     void   GenPosition(const GenParamInteraction& param, double& x, double& y, double& z, double& t);
-    /// Determines a particle momentum (isotropic direction, uniform magnitude)
-    void   GenMomentum(const GenParamParticle& param, Particle& part);
+    /// Distance from a vertex inside the volume to its boundary along a unit direction
+    double ExitDistance(const GenParamInteraction& param, double x, double y, double z,
+                        double dx, double dy, double dz) const;
+    /// The largest distance ExitDistance can return for a vertex, i.e. the distance to
+    /// the farthest corner of the volume
+    double MaxExitDistance(const GenParamInteraction& param, double x, double y, double z) const;
+    /// Determines a particle direction (unit vector). When inward_volume is given, the
+    /// direction is drawn with a probability density proportional to the distance the
+    /// particle travels inside that volume raised to shoot_inward_power.
+    void   GenDirection(const GenParamParticle& param, const GenParamInteraction* inward_volume,
+                        double x, double y, double z, double max_distance,
+                        double& dx, double& dy, double& dz);
+    /// Determines a particle momentum (uniform magnitude, direction from GenDirection)
+    void   GenMomentum(const GenParamParticle& param, Particle& part,
+                       const GenParamInteraction* inward_volume=nullptr,
+                       double max_distance=0.);
 
     /// random seed for the record
     unsigned int _seed;

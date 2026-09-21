@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.3.0 - 2026-09-20
+
+### Added
+* add an interaction-level `ShootInward` option that samples particle directions with a probability density proportional to the path length remaining inside the vertex volume
+* accept either a boolean or a number for `ShootInward`, where `True` means `1`, `False` means `0`, and `0` is plain isotropic sampling
+* keep the bias composable with the existing `phi_range` and `theta_range` windows, which stay in the global frame
+* reject a `ShootInward` strength that is negative or not finite (error code 17)
+* add regression tests covering the in-volume path length gain, the strength knob, the boolean shorthand, and the zero-extent volume fallback
+
 ## v1.2.0 - 2026-09-14
 
 ### Added

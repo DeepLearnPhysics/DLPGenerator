@@ -1,15 +1,16 @@
+import math
 import unittest
 
 from ROOT import DLPGenerator as G
-from dlp_generator.config_parser import create_generator
+from dlp_generator.config_parser import create_generator, parse_shoot_inward
 
 
-def particle(pdg, multiplicity, weight=1.0):
+def particle(pdg, multiplicity, weight=1.0, kerange=(0.0, 0.0)):
     param = G.GenParamParticle()
     for code in pdg:
         param.pdg.push_back(code)
     param.multi[0], param.multi[1] = multiplicity
-    param.kerange[0], param.kerange[1] = (0.0, 0.0)
+    param.kerange[0], param.kerange[1] = kerange
     param.weight = weight
     return param
 
@@ -86,6 +87,153 @@ class ParticleMultiplicityTest(unittest.TestCase):
         )
 
         self.assertEqual(generator.Add(config), 16)
+
+
+INWARD_LO = (0.0, 0.0, 0.0)
+INWARD_HI = (2000.0, 1000.0, 5000.0)
+
+
+def inward_config(shoot_inward, seed=12345, num_event=4000):
+    block = {
+        "NumEvent": [num_event, num_event],
+        "NumParticle": [1, 1],
+        "XRange": [INWARD_LO[0], INWARD_HI[0]],
+        "YRange": [INWARD_LO[1], INWARD_HI[1]],
+        "ZRange": [INWARD_LO[2], INWARD_HI[2]],
+        "TRange": [0.0, 0.0],
+        "ShootInward": shoot_inward,
+        "Particles": [
+            {
+                "PDG": [13],
+                "NumRange": [1, 1],
+                "KERange": [1.0, 1.0],
+                "UseMom": False,
+                "Weight": 1,
+            }
+        ],
+    }
+    return {"SEED": seed, "Bomb": block}
+
+
+def path_inside_volume(row):
+    """Distance the particle travels before leaving the generation volume."""
+    # PyROOT exposes std::array without slicing, so index one element at a time
+    vertex = [row[11], row[12], row[13]]
+    momentum = [row[6], row[7], row[8]]
+    magnitude = math.sqrt(sum(value * value for value in momentum))
+    best = float("inf")
+    for axis in range(3):
+        direction = momentum[axis] / magnitude
+        if abs(direction) < 1e-15:
+            continue
+        wall = INWARD_HI[axis] if direction > 0 else INWARD_LO[axis]
+        best = min(best, (wall - vertex[axis]) / direction)
+    return best
+
+
+def inward_paths(shoot_inward):
+    generator = create_generator(inward_config(shoot_inward))
+    return [path_inside_volume(row) for row in generator.Flatten(generator.Generate())]
+
+
+def near_corner(row):
+    """True when the vertex sits in the outer eighth of every axis."""
+    for axis in range(3):
+        lo, hi = INWARD_LO[axis], INWARD_HI[axis]
+        margin = 0.125 * (hi - lo)
+        if lo + margin <= row[11 + axis] <= hi - margin:
+            return False
+    return True
+
+
+class ShootInwardTest(unittest.TestCase):
+    def test_inward_sampling_lengthens_the_path_inside_the_volume(self):
+        isotropic = inward_paths(False)
+        inward = inward_paths(True)
+
+        self.assertEqual(len(inward), 4000)
+        self.assertGreater(
+            sum(inward) / len(inward), 1.15 * sum(isotropic) / len(isotropic)
+        )
+
+    def test_inward_sampling_wastes_far_fewer_throws(self):
+        isotropic = inward_paths(False)
+        inward = inward_paths(True)
+
+        wasted = sum(1 for value in inward if value < 200.0) / len(inward)
+        baseline = sum(1 for value in isotropic if value < 200.0) / len(isotropic)
+        self.assertLess(wasted, 0.6 * baseline)
+
+    def test_corner_vertices_are_the_ones_that_gain(self):
+        # A hemisphere cut barely helps a vertex near a corner, because half of the
+        # retained directions still leave through the two nearby walls.
+        generator = create_generator(inward_config(True, num_event=20000))
+        rows = [row for row in generator.Flatten(generator.Generate()) if near_corner(row)]
+        self.assertGreater(len(rows), 200)
+
+        wasted = sum(1 for row in rows if path_inside_volume(row) < 200.0) / len(rows)
+        self.assertLess(wasted, 0.25)
+
+    def test_power_zero_reproduces_isotropic_sampling(self):
+        isotropic = inward_paths(False)
+        unbiased = inward_paths(0)
+
+        self.assertAlmostEqual(
+            sum(unbiased) / len(unbiased),
+            sum(isotropic) / len(isotropic),
+            delta=0.08 * sum(isotropic) / len(isotropic),
+        )
+
+    def test_the_bias_grows_with_the_power(self):
+        means = [
+            sum(values) / len(values)
+            for values in (
+                inward_paths(0),
+                inward_paths(1),
+                inward_paths(3),
+            )
+        ]
+
+        self.assertEqual(means, sorted(means))
+        self.assertGreater(means[2], 1.5 * means[0])
+
+    def test_zero_extent_volume_stays_isotropic(self):
+        # No direction travels any distance, so there is nothing to bias toward.
+        generator = G.ParticleBomb(1)
+        config = interaction(
+            (1, 1), [particle([13], (1, 1), kerange=(1.0, 1.0))], num_event=(2000, 2000)
+        )
+        config.shoot_inward_power = 1.0
+
+        self.assertEqual(generator.Add(config), 0)
+        rows = generator.Flatten(generator.Generate())
+
+        self.assertEqual(len(rows), 2000)
+        self.assertGreater(sum(1 for row in rows if row[8] < 0.0), 900)
+        self.assertLess(sum(1 for row in rows if row[8] < 0.0), 1100)
+
+    def test_rejects_a_negative_power(self):
+        generator = G.ParticleBomb(1)
+        config = interaction((1, 1), [particle([13], (1, 1))])
+        config.shoot_inward_power = -1.0
+
+        self.assertEqual(generator.Add(config), 17)
+        self.assertFalse(generator.Configured())
+
+    def test_booleans_are_shorthand_for_a_strength(self):
+        self.assertEqual(parse_shoot_inward(True), 1.0)
+        self.assertEqual(parse_shoot_inward(False), 0.0)
+        self.assertEqual(parse_shoot_inward(2.5), 2.5)
+        self.assertEqual(parse_shoot_inward(0), 0.0)
+
+    def test_true_and_one_configure_the_same_generator(self):
+        self.assertEqual(inward_paths(True), inward_paths(1))
+        self.assertEqual(inward_paths(False), inward_paths(0))
+
+    def test_rejects_a_shoot_inward_value_that_is_not_a_strength(self):
+        for value in ("yes", -1, float("nan")):
+            with self.assertRaisesRegex(ValueError, "boolean or a non-negative number"):
+                create_generator(inward_config(value))
 
 
 def selected_config(seed=12345):

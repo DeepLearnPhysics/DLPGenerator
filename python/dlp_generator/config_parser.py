@@ -1,6 +1,23 @@
 
 from ROOT import DLPGenerator as G
+import math
 import yaml
+
+def parse_shoot_inward(value):
+	'''
+	Interpret the ShootInward config value and return the bias exponent.
+	It is either a boolean (True selects the default strength, False disables the
+	bias) or a non-negative number that sets the strength directly, where 0 is
+	equivalent to False. See ParticleList.h for how the exponent is applied.
+	'''
+	# bool is a subclass of int, so it has to be tested first
+	if isinstance(value, bool):
+		return 1.0 if value else 0.0
+	if not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+		raise ValueError(
+			'ShootInward must be a boolean or a non-negative number, got %r' % (value,)
+		)
+	return float(value)
 
 def create_generator(cfg):
 	'''
@@ -39,6 +56,7 @@ def create_generator(cfg):
 	    param.zrange[0],param.zrange[1] = val['ZRange']
 	    param.trange[0],param.trange[1] = val['TRange']
 	    param.add_root = val.get('AddParent',False)
+	    param.shoot_inward_power = parse_shoot_inward(val.get('ShootInward',False))
 	    # Fill particle-wise config parameter set
 	    for part in val['Particles']:
 	        part_param = G.GenParamParticle()

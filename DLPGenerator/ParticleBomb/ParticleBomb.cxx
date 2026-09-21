@@ -1,6 +1,7 @@
 #ifndef __DLPGENERATOR_PARTICLEBOMB_CXX__
 #define __DLPGENERATOR_PARTICLEBOMB_CXX__
 
+#include <algorithm>
 #include <set>
 
 #include "ParticleBomb.h"
@@ -69,6 +70,7 @@ namespace DLPGenerator {
 			if(param.yrange[0]>param.yrange[1]) throw 4;
 			if(param.zrange[0]>param.zrange[1]) throw 5;
 			if(param.trange[0]>param.trange[1]) throw 6;
+			if(!std::isfinite(param.shoot_inward_power) || param.shoot_inward_power < 0.) throw 17;
 
 			if(_debug) {
 				std::cout << "[ParticleBomb] X: [" << param.xrange[0] << " : " << param.xrange[1] << "]"
@@ -79,6 +81,8 @@ namespace DLPGenerator {
 				<< "[ParticleBomb] Event    Multiplicity: [" << param.num_event[0] << " : " << param.num_event[1] << "]"
 				<< std::endl
 				<< "[ParticleBomb] Particle Multiplicity: [" << param.num_particle[0] << " : " << param.num_particle[1] << "]"
+				<< std::endl
+				<< "[ParticleBomb] Shoot inward power: " << param.shoot_inward_power
 				<< std::endl;
 			}
 
@@ -133,7 +137,8 @@ namespace DLPGenerator {
 			<< "  13 ... the PDG code list is empty" << std::endl
 			<< "  14 ... a PDG code is not known to ROOT and is not a valid ion code" << std::endl
 			<< "  15 ... required particle minima exceed the minimum particles per event" << std::endl
-			<< "  16 ... particle maxima and positive weights cannot fill the maximum particles per event" << std::endl;
+			<< "  16 ... particle maxima and positive weights cannot fill the maximum particles per event" << std::endl
+			<< "  17 ... the shoot inward power is negative or not finite" << std::endl;
 			return error_code;
 		}
 		_configured = true;
@@ -244,6 +249,15 @@ namespace DLPGenerator {
 			    double x,y,z,t;
 			    this->GenPosition(int_param, x, y, z, t);
 
+			    // Bias directions toward the bulk of the volume if requested. The scale of the
+			    // rejection is the longest path the particle could possibly travel inside it,
+			    // shared by every particle of this interaction because they share the vertex.
+			    const double max_distance = int_param.shoot_inward_power > 0.
+			    	? this->MaxExitDistance(int_param, x, y, z) : 0.;
+			    const bool shoot_inward = max_distance > 0.;
+			    if(_debug && int_param.shoot_inward_power > 0. && !shoot_inward)
+			    	std::cout << "[ParticleBomb]   Vertex volume has no extent: keeping directions isotropic" << std::endl;
+
 			    // Decide which particles to be generated
 			    auto order_list = this->GenParticles(num_part, int_param.part_param_v);
 
@@ -286,7 +300,7 @@ namespace DLPGenerator {
 						<< " [GeV/c**2]" << std::endl;
 
 			    	// set momentum
-			    	this->GenMomentum(part_param, part);
+			    	this->GenMomentum(part_param, part, shoot_inward ? &int_param : nullptr, max_distance);
 
 			    	// save a particle
 			    	part_v.emplace_back(part);
@@ -443,7 +457,89 @@ namespace DLPGenerator {
 		}
 	}
 
-	void ParticleBomb::GenMomentum(const GenParamParticle& param, Particle& part) 
+	double ParticleBomb::ExitDistance(const GenParamInteraction& param, double x, double y, double z,
+		double dx, double dy, double dz) const
+	{
+		const double origin[3] = {x, y, z};
+		const double dir[3]    = {dx, dy, dz};
+		const double lo[3]     = {param.xrange[0], param.yrange[0], param.zrange[0]};
+		const double hi[3]     = {param.xrange[1], param.yrange[1], param.zrange[1]};
+
+		// The slab method: the vertex is inside the box, so the particle leaves it at
+		// the nearest of the three candidate wall crossings.
+		double result = kINVALID_DOUBLE;
+		for(size_t axis=0; axis<3; ++axis) {
+			// a direction parallel to a pair of walls never crosses them
+			if(dir[axis] == 0.) continue;
+			const double wall = dir[axis] > 0. ? hi[axis] : lo[axis];
+			result = std::min(result, (wall - origin[axis]) / dir[axis]);
+		}
+
+		if(result == kINVALID_DOUBLE) return 0.;
+		return std::max(result, 0.);
+	}
+
+	double ParticleBomb::MaxExitDistance(const GenParamInteraction& param, double x, double y, double z) const
+	{
+		// The farthest point of a box from an interior point is always one of its eight
+		// corners. That makes this a tight bound on ExitDistance, which keeps the
+		// rejection sampling in GenDirection efficient.
+		double result = 0.;
+		for(size_t corner=0; corner<8; ++corner) {
+			const double cx = (corner & 1 ? param.xrange[1] : param.xrange[0]) - x;
+			const double cy = (corner & 2 ? param.yrange[1] : param.yrange[0]) - y;
+			const double cz = (corner & 4 ? param.zrange[1] : param.zrange[0]) - z;
+			result = std::max(result, sqrt(cx*cx + cy*cy + cz*cz));
+		}
+		return result;
+	}
+
+	void ParticleBomb::GenDirection(const GenParamParticle& param, const GenParamInteraction* inward_volume,
+		double x, double y, double z, double max_distance,
+		double& dx, double& dy, double& dz)
+	{
+		// Cap the retries so a phi/theta window aimed at a nearby wall, or a very large
+		// power, degrades into a slight bias instead of hanging the generator.
+		// (a window with a 10% acceptance rate would reach this once in 10^45 draws)
+		static const size_t kMaxTries = 1000;
+
+		for(size_t tries=0; ; ++tries) {
+
+			// Isotropic proposal inside the configured angular window
+			const double phi = this->flat_dfire(param.phi_range[0],param.phi_range[1]);
+			const double cos_theta = this->flat_dfire(cos(param.theta_range[1]),cos(param.theta_range[0]));
+			const double sin_theta = sqrt(1. - pow(cos_theta,2));
+
+			dx = cos(phi) * sin_theta;
+			dy = sin(phi) * sin_theta;
+			dz = cos_theta;
+
+			if(!inward_volume) return;
+
+			// Accept with a probability that grows with the path length left inside the
+			// volume. Unlike a cut against the direction of the volume center, this adapts
+			// to where the vertex sits: near a corner only the directions crossing the
+			// bulk of the box survive, while near the center almost everything does.
+			const double distance = this->ExitDistance(*inward_volume, x, y, z, dx, dy, dz);
+			if(this->flat_dfire(0.,1.) < pow(distance / max_distance, inward_volume->shoot_inward_power))
+				return;
+
+			if(tries + 1 >= kMaxTries) {
+				static bool warned = false;
+				if(!warned) {
+					warned = true;
+					std::cerr << "[ParticleBomb] Warning: inward sampling accepted no direction in "
+						<< kMaxTries << " tries. The phi/theta window may point out of the volume, "
+						<< "or shoot_inward_power may be too large. Keeping the last proposal."
+						<< std::endl;
+				}
+				return;
+			}
+		}
+	}
+
+	void ParticleBomb::GenMomentum(const GenParamParticle& param, Particle& part,
+		const GenParamInteraction* inward_volume, double max_distance)
 	{	    
 		assert(part.mass != kINVALID_DOUBLE);
 
@@ -455,13 +551,8 @@ namespace DLPGenerator {
 	    
 	    double mom_mag = sqrt(pow(part.energy,2) - pow(part.mass,2));
 
-	    double phi = this->flat_dfire(param.phi_range[0],param.phi_range[1]);
-	    double cos_theta = this->flat_dfire(cos(param.theta_range[1]),cos(param.theta_range[0]));
-	    double sin_theta = sqrt(1. - pow(cos_theta,2));
-	      
-	    part.px = cos(phi) * sin_theta;
-	    part.py = sin(phi) * sin_theta;
-	    part.pz = cos_theta;
+	    this->GenDirection(param, inward_volume, part.x, part.y, part.z, max_distance,
+	    	part.px, part.py, part.pz);
 	    
 	    if(_debug)
 	        std::cout << "[ParticleBomb]     Direction : (" << part.px << "," << part.py << "," << part.pz << ")" << std::endl

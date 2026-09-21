@@ -54,6 +54,9 @@ namespace DLPGenerator {
     std::array <double, 2> trange;       /// the range of the interaction in time
     std::vector<GenParamParticle> part_param_v; /// parameters of particles to be generated
     bool add_root; /// if true, add a graviton as a parent to help grouping particles
+    double shoot_inward_power; /// bias directions toward the bulk of the vertex volume by
+                               /// weighting the in-volume path length with this exponent.
+                               /// 0 disables the bias and samples isotropically.
 
     GenParamInteraction()
     {
@@ -64,6 +67,7 @@ namespace DLPGenerator {
       for(auto& v : zrange ) v = kINVALID_DOUBLE;
       for(auto& v : trange ) v = kINVALID_DOUBLE;
       add_root = false;
+      shoot_inward_power = 0.;
     }
   };
 

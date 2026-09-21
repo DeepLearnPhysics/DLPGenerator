@@ -183,6 +183,12 @@ These parameters should be specified at the root-level (see the example below). 
 
 * `AddParent` ... setting this `True` is recommended(!). When you generate multiple interactions where each interaction contains multiple particles, the output will be a flat list of all particles. It would be helpful if there can be a notion of "grouping" each interaction. When `AddParent` is set to `True`, a virtual parent particle is added to group those particles that belong to the same event. 
 
+* `ShootInward` ... biases particle directions toward the bulk of the vertex volume, so that fewer particles leave it immediately and deposit nothing. The generator measures how far the particle would travel inside `XRange`/`YRange`/`ZRange` before crossing a wall, and accepts a candidate direction with a probability that grows with that distance. Because the criterion is the path length itself, it adapts to where the vertex landed: near the center of a face roughly a hemisphere of directions survives, near an edge roughly a quadrant, and near a corner roughly an octant. No angular cut can do that, which is why a simple "point back at the center of the volume" rule helps surprisingly little at the corners, where it is needed most.
+
+  The value is either a boolean or a number setting the strength directly. `True` is shorthand for `1`, and `False` (the default) is shorthand for `0`. Formally, the direction is sampled with a probability density proportional to the in-volume path length raised to that power, so `0` is plain isotropic sampling and larger values bias harder. `3` happens to be exactly equivalent to aiming at a uniformly sampled point inside the volume, because the solid-angle density of directions toward a uniform point in a three-dimensional body goes as the cube of the path length. That equivalence is a property of the geometry, not a recommendation.
+
+  Useful values run from `0` to about `4`. Past that you get very little extra path length while the directions collapse onto the volume's long diagonal, and the rejection sampling starts failing its retry budget for vertices near a corner, which quietly reverts exactly those particles to isotropic. `ShootInward` composes with `phi_range`/`theta_range`, which keep their usual meaning in the global frame.
+
 ### Example D: generating a parent to group particles
 
 Modify `NumEvent` to allow multiple interactions + enable `AddParent` in the interaction configuration block.
@@ -279,4 +285,56 @@ GeneratorMPR:
 gen = create_generator( yaml.load(config_text, Loader=yaml.Loader) )
 
 gen.PrintHierarchy(gen.Flatten(gen.Generate()))
+```
+
+### Example F: shooting particles inward
+
+A vertex sampled near a corner of the volume usually produces a particle that escapes right away. `ShootInward` suppresses those directions. Below we measure the mean distance each particle travels before leaving the volume, for a few values of `ShootInward`.
+
+```{code-cell}
+config_text = '''
+
+SEED:      1
+
+GeneratorMPV:
+  NumEvent: [4000,4000]
+  NumParticle: [1,1]
+  XRange: [0,2000]
+  YRange: [0,1000]
+  ZRange: [0,5000]
+  TRange: [0,10]
+  ShootInward: 1
+  Particles:
+    -
+      PDG:      [13]
+      NumRange: [1,1]
+      KERange:  [1,1]
+      UseMom:   False
+      Weight:   1
+'''
+
+import math
+
+LO = (0., 0., 0.)
+HI = (2000., 1000., 5000.)
+
+def path_inside(row):
+    """how far the particle gets before it crosses a wall of the volume"""
+    magnitude = math.sqrt(row[6]**2 + row[7]**2 + row[8]**2)
+    best = float('inf')
+    for axis in range(3):
+        direction = row[6 + axis] / magnitude
+        if abs(direction) < 1e-15:
+            continue
+        wall = HI[axis] if direction > 0 else LO[axis]
+        best = min(best, (wall - row[11 + axis]) / direction)
+    return best
+
+for power in [0, 1, 3]:
+    cfg = config_text.replace('ShootInward: 1', f'ShootInward: {power}')
+    gen = create_generator(yaml.load(cfg, Loader=yaml.Loader))
+    lengths = [path_inside(row) for row in gen.Flatten(gen.Generate())]
+    wasted = sum(1 for value in lengths if value < 200.) / len(lengths)
+    print(f'power {power}: mean path {sum(lengths)/len(lengths):7.0f} mm, '
+          f'{wasted:.1%} of particles escape within 200 mm')
 ```

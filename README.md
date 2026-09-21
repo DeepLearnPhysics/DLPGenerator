@@ -193,6 +193,11 @@ Each top-level YAML key other than `SEED`, `Debug`, and the optional
 * `NumParticle`: total particle multiplicity range for an interaction
 * `XRange`, `YRange`, `ZRange`, `TRange`: uniform position and time ranges
 * `AddParent`: whether to add a synthetic parent/root particle
+* `ShootInward`: bias particle directions toward the bulk of the
+  `XRange`/`YRange`/`ZRange` volume so that fewer particles leave it immediately.
+  `True` selects the default strength, `False` (the default) disables the bias,
+  and a number sets the strength directly: `0` is isotropic, `1` is the balanced
+  default, and values much above `4` are counterproductive
 * `Particles`: one or more particle templates
 * `SelectionWeight`: relative probability when root-level
   `InteractionSelection` is enabled
