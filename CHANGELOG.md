@@ -10,6 +10,13 @@ All notable changes to this project will be documented in this file.
 * keep the bias composable with the existing `phi_range` and `theta_range` windows, which stay in the global frame
 * reject a `ShootInward` strength that is negative or not finite (error code 17)
 * add regression tests covering the in-volume path length gain, the strength knob, the boolean shorthand, and the zero-extent volume fallback
+* add `ParticleBomb::PrintConfig()`, which dumps the seed, the debug state, and every registered interaction block
+* dump the configuration from `Seed()`, `Debug()`, `Clear()`, and `Add()` whenever debug mode is on, and show a rejected block next to its error code
+* add `ParticleBomb::InwardAcceptance()`, which estimates how often the inward sampler accepts a proposal for a given volume and particle template
+* warn from `Add()` when a `ShootInward` strength is too peaked for its volume to sample, instead of silently falling back to unbiased directions at generation time
+
+### Changed
+* give `GenParamInteraction::shoot_inward_power` a compile-time default of `kDEFAULT_SHOOT_INWARD_POWER` (0) instead of assigning it in the constructor body
 
 ## v1.2.0 - 2026-09-14
 

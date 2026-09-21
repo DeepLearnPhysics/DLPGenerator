@@ -220,6 +220,12 @@ class ShootInwardTest(unittest.TestCase):
         self.assertEqual(generator.Add(config), 17)
         self.assertFalse(generator.Configured())
 
+    def test_the_compiled_default_strength_is_zero(self):
+        # kDEFAULT_SHOOT_INWARD_POWER in ParticleList.h supplies this as a default
+        # member initializer. Asserting on the constant itself would be brittle,
+        # because cling only exposes it once the header has been parsed.
+        self.assertEqual(G.GenParamInteraction().shoot_inward_power, 0.0)
+
     def test_booleans_are_shorthand_for_a_strength(self):
         self.assertEqual(parse_shoot_inward(True), 1.0)
         self.assertEqual(parse_shoot_inward(False), 0.0)
@@ -265,6 +271,93 @@ def selected_config(seed=12345):
         "CC": block(11),
         "NC": block(211),
     }
+
+
+def acceptance(power, theta_max=None):
+    config = interaction((1, 1), [particle([13], (1, 1), kerange=(1.0, 1.0))])
+    config.xrange[0], config.xrange[1] = (0.0, 2000.0)
+    config.yrange[0], config.yrange[1] = (0.0, 1000.0)
+    config.zrange[0], config.zrange[1] = (0.0, 5000.0)
+    config.shoot_inward_power = power
+    if theta_max is not None:
+        config.part_param_v[0].theta_range[1] = theta_max
+    rates = G.ParticleBomb(1).InwardAcceptance(config, config.part_param_v[0])
+    return rates[0], rates[1]
+
+
+class InwardAcceptanceTest(unittest.TestCase):
+    # Add() warns below this; keep in sync with kMinInwardAcceptance in ParticleBomb.cxx
+    THRESHOLD = 0.005
+
+    def test_nothing_is_rejected_without_a_bias(self):
+        self.assertEqual(acceptance(0.0), (1.0, 1.0))
+
+    def test_the_rate_falls_as_the_bias_grows(self):
+        typical = [acceptance(power)[0] for power in (0.0, 1.0, 2.0, 4.0, 8.0)]
+        self.assertEqual(typical, sorted(typical, reverse=True))
+
+    def test_a_usable_power_stays_above_the_warning_threshold(self):
+        for power in (0.0, 1.0, 2.0, 3.0):
+            self.assertGreater(acceptance(power)[1], self.THRESHOLD, f"power {power}")
+
+    def test_an_excessive_power_falls_below_the_warning_threshold(self):
+        for power in (6.0, 12.0, 20.0):
+            self.assertLess(acceptance(power)[1], self.THRESHOLD, f"power {power}")
+
+    def test_a_narrow_cone_aimed_out_of_the_volume_is_caught(self):
+        # This combination exhausted the retry budget at generation time, which is
+        # exactly what the estimate is meant to predict up front.
+        self.assertLess(acceptance(1.0, theta_max=0.4)[1], self.THRESHOLD)
+
+    def test_estimating_does_not_disturb_the_generated_events(self):
+        def pdgs(estimate_first):
+            generator = G.ParticleBomb(4242)
+            config = interaction(
+                (1, 2), [particle([13], (1, 2), kerange=(1.0, 1.0))], num_event=(20, 20)
+            )
+            config.shoot_inward_power = 1.0
+            self.assertEqual(generator.Add(config), 0)
+            if estimate_first:
+                generator.InwardAcceptance(config, config.part_param_v[0])
+            return [
+                (row[6], row[7], row[8]) for row in generator.Flatten(generator.Generate())
+            ]
+
+        self.assertEqual(pdgs(True), pdgs(False))
+
+
+class VerboseConfigTest(unittest.TestCase):
+    def config(self):
+        return interaction((1, 1), [particle([13], (1, 1), kerange=(1.0, 1.0))])
+
+    def test_print_config_runs_on_an_empty_generator(self):
+        G.ParticleBomb(1).PrintConfig()
+
+    def test_print_config_runs_on_a_configured_generator(self):
+        generator = G.ParticleBomb(1)
+        self.assertEqual(generator.Add(self.config()), 0)
+        generator.PrintConfig()
+
+    def test_the_setters_stay_usable_in_debug_mode(self):
+        # Each of these dumps the configuration; here we only pin down that the
+        # printing does not disturb the generator state.
+        generator = G.ParticleBomb(1)
+        generator.Debug(True)
+        generator.Seed(99)
+        self.assertEqual(generator.Seed(), 99)
+        self.assertEqual(generator.Add(self.config()), 0)
+        self.assertTrue(generator.Configured())
+        generator.Clear()
+        self.assertFalse(generator.Configured())
+        generator.Debug(False)
+
+    def test_debug_generation_matches_quiet_generation(self):
+        def pdgs(debug):
+            generator = G.ParticleBomb(4242, debug)
+            generator.Add(self.config())
+            return [item.pdg_code for item in generator.Generate()[0]]
+
+        self.assertEqual(pdgs(True), pdgs(False))
 
 
 class InteractionSelectionTest(unittest.TestCase):

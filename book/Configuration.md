@@ -170,7 +170,7 @@ gen.PrintHierarchy(gen.Flatten(gen.Generate()))
 I hope the above examples were helpful to learn how to use the `ParticleBomb` event generator. There are a few more special configuration parameters that have not been covered and they can be critical. 
 
 * `SEED` ... this sets the random number generator's seed. `-1` will be a time-seed, suited for physics studies. For debugging, in order to have a reproducible behavior, give a positive integer.
-* `Debug` ... setting this `True` run the generator with more verbose mode, mainly for debugging purpose.
+* `Debug` ... setting this `True` run the generator with more verbose mode, mainly for debugging purpose. In this mode every call that changes the configuration (`Seed`, `Debug`, `Clear` and `Add`) dumps the full generator configuration, so you can see exactly what the generator is holding at each step. `Add` also prints the block it was handed before validating it, which puts a rejected block right next to its error code. The same dump is available on demand through `PrintConfig()`, regardless of the debug setting.
 * `InteractionSelection` ... optionally select exactly one named interaction
   block per `Generate()` call. With `Mode: weighted_random`, every interaction
   block supplies a finite positive `SelectionWeight`. Every call makes an
@@ -187,7 +187,7 @@ These parameters should be specified at the root-level (see the example below). 
 
   The value is either a boolean or a number setting the strength directly. `True` is shorthand for `1`, and `False` (the default) is shorthand for `0`. Formally, the direction is sampled with a probability density proportional to the in-volume path length raised to that power, so `0` is plain isotropic sampling and larger values bias harder. `3` happens to be exactly equivalent to aiming at a uniformly sampled point inside the volume, because the solid-angle density of directions toward a uniform point in a three-dimensional body goes as the cube of the path length. That equivalence is a property of the geometry, not a recommendation.
 
-  Useful values run from `0` to about `4`. Past that you get very little extra path length while the directions collapse onto the volume's long diagonal, and the rejection sampling starts failing its retry budget for vertices near a corner, which quietly reverts exactly those particles to isotropic. `ShootInward` composes with `phi_range`/`theta_range`, which keep their usual meaning in the global frame.
+  Useful values run from `0` to about `4`. Past that you get very little extra path length while the directions collapse onto the volume's long diagonal, and the rejection sampling starts failing its retry budget for vertices near a corner, which would quietly revert exactly those particles to isotropic. You do not have to guess where that limit falls for your own volume: the generator estimates the acceptance rate when the block is added and warns if the strength is too peaked to sample, and `InwardAcceptance()` reports the same numbers on demand. `ShootInward` composes with `phi_range`/`theta_range`, which keep their usual meaning in the global frame.
 
 ### Example D: generating a parent to group particles
 

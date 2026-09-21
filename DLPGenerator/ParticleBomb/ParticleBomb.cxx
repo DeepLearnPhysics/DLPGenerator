@@ -14,6 +14,13 @@ namespace DLPGenerator {
 		const double kProtonMassGeV = 0.9382720813;
 		const double kNeutronMassGeV = 0.9395654133;
 
+		/// GenDirection gives up after this many rejected inward proposals.
+		/// A window accepting 10% of proposals would reach it once in 10^45 draws.
+		const size_t kMaxInwardTries = 1000;
+		/// Add() warns below this acceptance rate: at 0.005 roughly 0.7% of the
+		/// particles thrown from the worst vertex would exhaust the retry budget.
+		const double kMinInwardAcceptance = 0.005;
+
 		bool DecodeIonPDG(int pdg, int& z, int& a)
 		{
 			const int abs_pdg = std::abs(pdg);
@@ -58,9 +65,20 @@ namespace DLPGenerator {
 	{
 		_seed = (unsigned int)(seed >= 0 ? seed : std::chrono::system_clock::now().time_since_epoch().count());
     	_engine = std::mt19937_64(_seed);  
+    	if(_debug) {
+    		std::cout << std::endl << "[ParticleBomb] seed set to " << _seed << std::endl;
+    		this->PrintConfig();
+    	}
 	}
 
     int   ParticleBomb::Add(DLPGenerator::GenParamInteraction param) {
+
+    	// Show what was handed over before validating it, so a rejected block is
+    	// still visible next to the error codes below.
+    	if(_debug) {
+    		std::cout << std::endl << "[ParticleBomb] Add() called with the block below" << std::endl;
+    		this->PrintInteraction(param, _param_v.size());
+    	}
 
     	// Sanity check
     	try {
@@ -72,24 +90,9 @@ namespace DLPGenerator {
 			if(param.trange[0]>param.trange[1]) throw 6;
 			if(!std::isfinite(param.shoot_inward_power) || param.shoot_inward_power < 0.) throw 17;
 
-			if(_debug) {
-				std::cout << "[ParticleBomb] X: [" << param.xrange[0] << " : " << param.xrange[1] << "]"
-				<< " Y: [" << param.yrange[0] << " : " << param.yrange[1] << "]"
-				<< " Z: [" << param.zrange[0] << " : " << param.zrange[1] << "]"
-				<< " T: [" << param.trange[0] << " : " << param.trange[1] << "]"
-				<< std::endl
-				<< "[ParticleBomb] Event    Multiplicity: [" << param.num_event[0] << " : " << param.num_event[1] << "]"
-				<< std::endl
-				<< "[ParticleBomb] Particle Multiplicity: [" << param.num_particle[0] << " : " << param.num_particle[1] << "]"
-				<< std::endl
-				<< "[ParticleBomb] Shoot inward power: " << param.shoot_inward_power
-				<< std::endl;
-			}
-
 			if(param.part_param_v.empty()) throw 7;
 			size_t minimum_total = 0;
 			size_t selectable_maximum_total = 0;
-			int ctr = 0;
 			for(auto const& part : param.part_param_v) {
 				if(part.phi_range[0]  >part.phi_range[1]   || part.phi_range[0]  <0 || part.phi_range[1]   > M_2PI ) throw 8;
 				if(part.theta_range[0]>part.theta_range[1] || part.theta_range[0]<0 || part.theta_range[1] > M_PI  ) throw 9;
@@ -104,18 +107,6 @@ namespace DLPGenerator {
 				for(auto const& pdg : part.pdg) {
 					if(ParticleMassGeV(pdg) == kINVALID_DOUBLE) throw 14;
 				}
-				if(_debug) {
-					std::cout << "[ParticleBomb] Particle " << ctr
-					<< std::endl
-					<< "[ParticleBomb]     KE [" << part.kerange[0] << " : " << part.kerange[1] << "]"
-					<< " Phi [" << part.phi_range[0] << " : " << part.phi_range[1] << "]"
-					<< " Theta [" << part.theta_range[0] << " : " << part.theta_range[1] << "]"
-					<< std::endl
-					<< "[ParticleBomb]     Multiplicity [" << part.multi[0] << " : " << part.multi[1] << "]"
-					<< " Weight " << part.weight
-					<< std::endl;
-				}
-				ctr++;
 			}
 			if(minimum_total > param.num_particle[0]) throw 15;
 			if(selectable_maximum_total < param.num_particle[1]) throw 16;
@@ -141,8 +132,35 @@ namespace DLPGenerator {
 			<< "  17 ... the shoot inward power is negative or not finite" << std::endl;
 			return error_code;
 		}
+		// A strong bias in an awkward volume can be too peaked to sample: GenDirection
+		// would exhaust its retry budget and keep an unbiased direction, quietly
+		// undoing the bias for exactly the corner vertices it was meant to fix. Say so
+		// here rather than letting it happen silently at generation time.
+		if(param.shoot_inward_power > 0.) {
+			for(size_t idx=0; idx<param.part_param_v.size(); ++idx) {
+				auto const rate = this->InwardAcceptance(param, param.part_param_v[idx]);
+				if(_debug)
+					std::cout << "[ParticleBomb]   Particle " << idx << " inward acceptance: "
+					<< rate[0] << " typical, " << rate[1] << " at the worst vertex" << std::endl;
+				if(rate[1] >= kMinInwardAcceptance) continue;
+				std::cerr
+				<< "[ParticleBomb] Warning: shoot inward power " << param.shoot_inward_power
+				<< " is too strong for this volume." << std::endl
+				<< "[ParticleBomb]   Particle " << idx << " accepts 1 proposal in "
+				<< (rate[1] > 0. ? 1./rate[1] : std::numeric_limits<double>::infinity())
+				<< " at the worst vertex (1 in "
+				<< (rate[0] > 0. ? 1./rate[0] : std::numeric_limits<double>::infinity())
+				<< " typically)." << std::endl
+				<< "[ParticleBomb]   Sampling gives up after " << kMaxInwardTries
+				<< " tries and keeps an unbiased direction, so those vertices drift back"
+				<< " toward isotropic." << std::endl
+				<< "[ParticleBomb]   Lower the power, or widen the volume." << std::endl;
+			}
+		}
+
 		_configured = true;
 		_param_v.push_back(param);
+		if(_debug) this->PrintConfig();
 		return 0;
     }
 
@@ -172,6 +190,52 @@ namespace DLPGenerator {
     		}
     	}
     	return result;
+    }
+
+    void ParticleBomb::PrintConfig() const
+    {
+    	std::cout
+    	<< "[ParticleBomb] ---------------- configuration ----------------" << std::endl
+    	<< "[ParticleBomb] Seed  : " << _seed << std::endl
+    	<< "[ParticleBomb] Debug : " << (_debug ? "true" : "false") << std::endl
+    	<< "[ParticleBomb] State : " << (_configured ? "configured" : "not configured")
+    	<< " with " << _param_v.size() << " interaction block(s)" << std::endl;
+
+    	for(size_t idx=0; idx<_param_v.size(); ++idx)
+    		this->PrintInteraction(_param_v[idx], idx);
+
+    	std::cout
+    	<< "[ParticleBomb] -----------------------------------------------" << std::endl
+    	<< std::endl;
+    }
+
+    void ParticleBomb::PrintInteraction(const GenParamInteraction& param, size_t index) const
+    {
+    	std::cout
+    	<< "[ParticleBomb]   Interaction block " << index << std::endl
+    	<< "[ParticleBomb]     X: [" << param.xrange[0] << " : " << param.xrange[1] << "]"
+    	<< " Y: [" << param.yrange[0] << " : " << param.yrange[1] << "]"
+    	<< " Z: [" << param.zrange[0] << " : " << param.zrange[1] << "]"
+    	<< " T: [" << param.trange[0] << " : " << param.trange[1] << "]" << std::endl
+    	<< "[ParticleBomb]     Event    multiplicity: [" << param.num_event[0] << " : " << param.num_event[1] << "]" << std::endl
+    	<< "[ParticleBomb]     Particle multiplicity: [" << param.num_particle[0] << " : " << param.num_particle[1] << "]" << std::endl
+    	<< "[ParticleBomb]     Add parent   : " << (param.add_root ? "true" : "false") << std::endl
+    	<< "[ParticleBomb]     Shoot inward : " << param.shoot_inward_power
+    	<< (param.shoot_inward_power > 0. ? " (in-volume path length exponent)" : " (off, isotropic)")
+    	<< std::endl;
+
+    	for(size_t idx=0; idx<param.part_param_v.size(); ++idx) {
+    		auto const& part = param.part_param_v[idx];
+    		std::cout << "[ParticleBomb]     Particle " << idx << " ... PDG";
+    		for(auto const& pdg : part.pdg) std::cout << " " << pdg;
+    		std::cout << std::endl
+    		<< "[ParticleBomb]       " << (part.use_mom ? "Momentum" : "KE      ")
+    		<< " [" << part.kerange[0] << " : " << part.kerange[1] << "]"
+    		<< " Phi [" << part.phi_range[0] << " : " << part.phi_range[1] << "]"
+    		<< " Theta [" << part.theta_range[0] << " : " << part.theta_range[1] << "]" << std::endl
+    		<< "[ParticleBomb]       Multiplicity [" << part.multi[0] << " : " << part.multi[1] << "]"
+    		<< " Weight " << part.weight << std::endl;
+    	}
     }
 
     void ParticleBomb::PrintHierarchy(const std::vector<std::array<double,15> >& particles) const 
@@ -494,15 +558,56 @@ namespace DLPGenerator {
 		return result;
 	}
 
+	std::array<double,2> ParticleBomb::InwardAcceptance(const GenParamInteraction& param,
+		const GenParamParticle& part) const
+	{
+		// A private engine with a fixed seed. Drawing from _engine here would make the
+		// generated events depend on whether this estimate ever ran.
+		std::mt19937_64 engine(0);
+		std::uniform_real_distribution<double> flat(0.,1.);
+
+		const size_t kVertices = 64, kDirections = 128;
+
+		double mean_rate = 0., worst_rate = 1.;
+
+		for(size_t iv=0; iv<kVertices; ++iv) {
+
+			const double x = param.xrange[0] + flat(engine) * (param.xrange[1] - param.xrange[0]);
+			const double y = param.yrange[0] + flat(engine) * (param.yrange[1] - param.yrange[0]);
+			const double z = param.zrange[0] + flat(engine) * (param.zrange[1] - param.zrange[0]);
+
+			// A volume with no extent disables the bias, so nothing is ever rejected
+			const double max_distance = this->MaxExitDistance(param, x, y, z);
+			if(!(max_distance > 0.)) { mean_rate += 1.; continue; }
+
+			// Mirror the proposal GenDirection draws, including the angular window.
+			// At a high power the rate is carried by a few rare long-path directions,
+			// so this sample under-reports it. That errs toward warning, which is the
+			// safe direction for a heuristic whose whole job is to warn.
+			double rate = 0.;
+			for(size_t id=0; id<kDirections; ++id) {
+				const double phi = part.phi_range[0]
+					+ flat(engine) * (part.phi_range[1] - part.phi_range[0]);
+				const double cos_theta = cos(part.theta_range[1])
+					+ flat(engine) * (cos(part.theta_range[0]) - cos(part.theta_range[1]));
+				const double sin_theta = sqrt(1. - pow(cos_theta,2));
+				const double distance = this->ExitDistance(param, x, y, z,
+					cos(phi) * sin_theta, sin(phi) * sin_theta, cos_theta);
+				rate += pow(distance / max_distance, param.shoot_inward_power);
+			}
+			rate /= kDirections;
+
+			mean_rate += rate;
+			worst_rate = std::min(worst_rate, rate);
+		}
+
+		return std::array<double,2>{mean_rate / kVertices, worst_rate};
+	}
+
 	void ParticleBomb::GenDirection(const GenParamParticle& param, const GenParamInteraction* inward_volume,
 		double x, double y, double z, double max_distance,
 		double& dx, double& dy, double& dz)
 	{
-		// Cap the retries so a phi/theta window aimed at a nearby wall, or a very large
-		// power, degrades into a slight bias instead of hanging the generator.
-		// (a window with a 10% acceptance rate would reach this once in 10^45 draws)
-		static const size_t kMaxTries = 1000;
-
 		for(size_t tries=0; ; ++tries) {
 
 			// Isotropic proposal inside the configured angular window
@@ -524,12 +629,12 @@ namespace DLPGenerator {
 			if(this->flat_dfire(0.,1.) < pow(distance / max_distance, inward_volume->shoot_inward_power))
 				return;
 
-			if(tries + 1 >= kMaxTries) {
+			if(tries + 1 >= kMaxInwardTries) {
 				static bool warned = false;
 				if(!warned) {
 					warned = true;
 					std::cerr << "[ParticleBomb] Warning: inward sampling accepted no direction in "
-						<< kMaxTries << " tries. The phi/theta window may point out of the volume, "
+						<< kMaxInwardTries << " tries. The phi/theta window may point out of the volume, "
 						<< "or shoot_inward_power may be too large. Keeping the last proposal."
 						<< std::endl;
 				}

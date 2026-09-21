@@ -23,6 +23,9 @@ namespace DLPGenerator {
 
   static const double kINVALID_DOUBLE = std::numeric_limits<double>::max();
   static const double M_2PI = M_PI * 2;
+  /// Strength of the inward direction bias a GenParamInteraction starts with.
+  /// Fixed at compile time; 0 means the bias is off and directions are isotropic.
+  static constexpr double kDEFAULT_SHOOT_INWARD_POWER = 0.;
 
   struct GenParamParticle {
     std::vector<int       > pdg;     /// a list of possible PDG code of a particle for generation
@@ -54,9 +57,10 @@ namespace DLPGenerator {
     std::array <double, 2> trange;       /// the range of the interaction in time
     std::vector<GenParamParticle> part_param_v; /// parameters of particles to be generated
     bool add_root; /// if true, add a graviton as a parent to help grouping particles
-    double shoot_inward_power; /// bias directions toward the bulk of the vertex volume by
-                               /// weighting the in-volume path length with this exponent.
-                               /// 0 disables the bias and samples isotropically.
+    /// bias directions toward the bulk of the vertex volume by weighting the
+    /// in-volume path length with this exponent. 0 disables the bias and samples
+    /// isotropically. Defaulted at compile time, not in the constructor body.
+    double shoot_inward_power = kDEFAULT_SHOOT_INWARD_POWER;
 
     GenParamInteraction()
     {
@@ -67,7 +71,6 @@ namespace DLPGenerator {
       for(auto& v : zrange ) v = kINVALID_DOUBLE;
       for(auto& v : trange ) v = kINVALID_DOUBLE;
       add_root = false;
-      shoot_inward_power = 0.;
     }
   };
 

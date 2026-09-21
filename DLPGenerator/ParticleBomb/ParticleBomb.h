@@ -36,8 +36,12 @@ namespace DLPGenerator {
     , _engine(_seed)
     , _flat_random(0.,1.)
     , _debug(debug)
-    { this->Clear(); 
-      if(_debug) std::cout << "ParticleBomb created with SEED " << _seed << std::endl << std::endl;
+    , _configured(false)
+    { 
+      if(_debug) {
+        std::cout << std::endl << "[ParticleBomb] created with SEED " << _seed << std::endl;
+        this->PrintConfig();
+      }
     }
     
     /// Default destructor
@@ -50,9 +54,23 @@ namespace DLPGenerator {
     /// sets seed
     void   Seed(int seed);  
     /// sets debug mode
-    void   Debug(bool debug) { _debug = debug; }
+    void   Debug(bool debug) 
+    { 
+      _debug = debug; 
+      if(_debug) {
+        std::cout << std::endl << "[ParticleBomb] debug mode enabled" << std::endl;
+        this->PrintConfig();
+      }
+    }
     /// Clears configuration
-    void   Clear() { _param_v.clear(); _configured=false;}
+    void   Clear() 
+    { 
+      _param_v.clear(); _configured=false;
+      if(_debug) {
+        std::cout << std::endl << "[ParticleBomb] configuration cleared" << std::endl;
+        this->PrintConfig();
+      }
+    }
     /// Add configuration
     int    Add(GenParamInteraction param);
     /// A sampler from uniform distribution
@@ -65,9 +83,20 @@ namespace DLPGenerator {
     std::vector<std::array<double,15> > Flatten(const std::vector<std::vector<DLPGenerator::Particle> >& particles) const;
     /// Utility function to print-out the particle hierarchy. The input is the flattned array
     void PrintHierarchy(const std::vector<std::array<double,15> >& particles) const;
+    /// Prints the whole generator configuration. Every setter calls this in debug mode.
+    void PrintConfig() const;
+    /// Estimates how often the inward sampler accepts a proposed direction for a given
+    /// volume and particle template: [0] the typical rate over the volume, [1] the rate
+    /// at the least efficient vertex found. A low rate means GenDirection will exhaust
+    /// its retry budget and fall back to unbiased directions. Runs on its own random
+    /// engine, so calling it never perturbs what Generate() produces.
+    std::array<double,2> InwardAcceptance(const GenParamInteraction& param,
+                                          const GenParamParticle& part) const;
 
   private:
 
+    /// Prints one interaction configuration block, indented under PrintConfig
+    void   PrintInteraction(const GenParamInteraction& param, size_t index) const;
     /// Determins which particle to produce
     std::vector<size_t> GenParticles(size_t num_part,
                                     const std::vector<GenParamParticle> param_v);
