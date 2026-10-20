@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## v1.3.0 - 2026-09-20
+## v1.3.0 - 2026-10-20
 
 ### Fixed
 * disable `ShootInward` for plane, line, and point vertex regions when any spatial range has zero width; preserve the configured angular window and report full acceptance without rejection retries
@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 * add `ParticleBomb::PrintConfig()`, which dumps the seed, the debug state, and every registered interaction block
 * dump the configuration from `Seed()`, `Debug()`, `Clear()`, and `Add()` whenever debug mode is on, and show a rejected block next to its error code
 * add `ParticleBomb::InwardAcceptance()`, which estimates how often the inward sampler accepts a proposal for a given volume and particle template
-* warn from `Add()` when a `ShootInward` strength is too peaked for its volume to sample, instead of silently falling back to unbiased directions at generation time
+* warn from `Add()` when estimated inward acceptance is low; generation warns and keeps the last rejected proposal on exhaustion by default, or throws when `ShootInwardStrict` is enabled
 
 ### Changed
 * give `GenParamInteraction::shoot_inward_power` a compile-time default of `kDEFAULT_SHOOT_INWARD_POWER` (0) instead of assigning it in the constructor body
