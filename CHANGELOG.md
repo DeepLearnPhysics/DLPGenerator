@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 * disable `ShootInward` for plane, line, and point vertex regions when any spatial range has zero width; preserve the configured angular window and report full acceptance without rejection retries
 
 ### Added
+* add opt-in interaction-level `ShootInwardStrict` (default `False`) to throw on exhaustion of 1,000 inward direction proposals instead of returning the last rejected proposal; expose failures through PyROOT with interaction indices
+* cover strict failure, the compatible default fallback, and unchanged successful sampling in regression tests
 * add an interaction-level `ShootInward` option that samples particle directions with a probability density proportional to the path length remaining inside the vertex volume
 * accept either a boolean or a number for `ShootInward`, where `True` means `1`, `False` means `0`, and `0` is plain isotropic sampling
 * keep the bias composable with the existing `phi_range` and `theta_range` windows, which stay in the global frame
@@ -20,6 +22,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 * give `GenParamInteraction::shoot_inward_power` a compile-time default of `kDEFAULT_SHOOT_INWARD_POWER` (0) instead of assigning it in the constructor body
+
+### Follow-up
+* quantify inward sampler exhaustion in production and improve sampling efficiency, including bounds adapted to angular windows; the default last-rejected-proposal fallback can distort the requested distribution, and the sampled acceptance estimate does not bound failure rates over the full volume
 
 ## v1.2.0 - 2026-09-14
 

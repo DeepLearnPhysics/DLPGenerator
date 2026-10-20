@@ -57,6 +57,10 @@ def create_generator(cfg):
 	    param.trange[0],param.trange[1] = val['TRange']
 	    param.add_root = val.get('AddParent',False)
 	    param.shoot_inward_power = parse_shoot_inward(val.get('ShootInward',False))
+	    strict = val.get('ShootInwardStrict', False)
+	    if not isinstance(strict, bool):
+	        raise ValueError('ShootInwardStrict must be a boolean, got %r' % (strict,))
+	    param.shoot_inward_strict = strict
 	    # Fill particle-wise config parameter set
 	    for part in val['Particles']:
 	        part_param = G.GenParamParticle()

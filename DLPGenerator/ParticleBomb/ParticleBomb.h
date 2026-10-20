@@ -88,7 +88,7 @@ namespace DLPGenerator {
     /// Estimates how often the inward sampler accepts a proposed direction for a given
     /// volume and particle template: [0] the typical rate over the volume, [1] the rate
     /// at the least efficient vertex found. A low rate means GenDirection will exhaust
-    /// its retry budget and fall back to unbiased directions. Runs on its own random
+    /// its retry budget and keep the last rejected proposal (or throw in strict mode). Runs on its own random
     /// engine, so calling it never perturbs what Generate() produces.
     std::array<double,2> InwardAcceptance(const GenParamInteraction& param,
                                           const GenParamParticle& part) const;

@@ -201,6 +201,10 @@ Each top-level YAML key other than `SEED`, `Debug`, and the optional
   (if any spatial range has zero width, the bias is disabled and directions
   follow the usual isotropic sampling within the configured angular window)
 * `Particles`: one or more particle templates
+* `ShootInwardStrict`: optional boolean, default `False`. If `True`, exhausting
+  1,000 inward direction proposals throws an exception and `Generate()` returns
+  no batch. If `False`, the existing warning and last-proposal fallback remain;
+  that fallback can distort the requested direction distribution.
 * `SelectionWeight`: relative probability when root-level
   `InteractionSelection` is enabled
 

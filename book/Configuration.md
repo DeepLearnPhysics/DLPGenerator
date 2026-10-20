@@ -187,7 +187,28 @@ These parameters should be specified at the root-level (see the example below). 
 
   The value is either a boolean or a number setting the strength directly. `True` is shorthand for `1`, and `False` (the default) is shorthand for `0`. Formally, the direction is sampled with a probability density proportional to the in-volume path length raised to that power, so `0` is plain isotropic sampling and larger values bias harder. `3` happens to be exactly equivalent to aiming at a uniformly sampled point inside the volume, because the solid-angle density of directions toward a uniform point in a three-dimensional body goes as the cube of the path length. That equivalence is a property of the geometry, not a recommendation.
 
-  Useful values run from `0` to about `4`. Past that you get very little extra path length while the directions collapse onto the volume's long diagonal, and the rejection sampling starts failing its retry budget for vertices near a corner, which would quietly revert exactly those particles to isotropic. You do not have to guess where that limit falls for your own volume: the generator estimates the acceptance rate when the block is added and warns if the strength is too peaked to sample, and `InwardAcceptance()` reports the same numbers on demand. `ShootInward` composes with `phi_range`/`theta_range`, which keep their usual meaning in the global frame.
+  Useful values run from `0` to about `4`. Past that you get very little extra path length while the directions collapse onto the volume's long diagonal, and the rejection sampling starts failing its retry budget for vertices near a corner, which by default returns the last rejected proposal and distorts the requested distribution. Enable `ShootInwardStrict` to fail instead. The generator estimates the acceptance rate when the block is added and warns if the strength is too peaked to sample, and `InwardAcceptance()` reports the same numbers on demand. This estimate samples a finite set of vertices and directions; it does not guarantee that generation will avoid exhaustion. `ShootInward` composes with `phi_range`/`theta_range`, which keep their usual meaning in the global frame.
+
+* `ShootInwardStrict` ... an interaction-level boolean, default `False`, which
+  controls what happens when all 1,000 inward direction proposals are rejected.
+  With `False`, generation preserves the existing warning and returns the last
+  rejected proposal. This fallback can distort the requested distribution.
+  With `True`, generation throws a C++ `std::runtime_error` (also propagated
+  through PyROOT) identifying the zero-based interaction block and interaction
+  indices. The failed `Generate()` call returns no batch, including any earlier
+  interactions in that call. Random state is not rolled back. Earlier successful
+  calls remain valid; a CLI output file may already contain those earlier calls.
+  Strict mode changes neither successful samples nor behavior when the bias is
+  disabled, including zero-width spatial ranges. For new production configurations:
+
+  ```yaml
+  ShootInward: 1
+  ShootInwardStrict: true
+  ```
+
+  On failure, reduce the strength or adjust the angular window or volume.
+  Automatically retrying with a newly sampled vertex can bias the vertex
+  distribution toward locations with better acceptance.
 
 ### Example D: generating a parent to group particles
 

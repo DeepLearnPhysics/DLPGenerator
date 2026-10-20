@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <set>
+#include <stdexcept>
+#include <string>
 
 #include "ParticleBomb.h"
 #include "TDatabasePDG.h"
@@ -140,9 +142,8 @@ namespace DLPGenerator {
 			return error_code;
 		}
 		// A strong bias in an awkward volume can be too peaked to sample: GenDirection
-		// would exhaust its retry budget and keep an unbiased direction, quietly
-		// undoing the bias for exactly the corner vertices it was meant to fix. Say so
-		// here rather than letting it happen silently at generation time.
+		// can exhaust its retry budget and either throw (strict mode) or keep a
+		// rejected proposal, distorting the bias. Warn before generation.
 		if(param.shoot_inward_power > 0.) {
 			for(size_t idx=0; idx<param.part_param_v.size(); ++idx) {
 				auto const rate = this->InwardAcceptance(param, param.part_param_v[idx]);
@@ -159,8 +160,10 @@ namespace DLPGenerator {
 				<< (rate[0] > 0. ? 1./rate[0] : std::numeric_limits<double>::infinity())
 				<< " typically)." << std::endl
 				<< "[ParticleBomb]   Sampling gives up after " << kMaxInwardTries
-				<< " tries and keeps an unbiased direction, so those vertices drift back"
-				<< " toward isotropic." << std::endl
+				<< (param.shoot_inward_strict
+					? " tries and throws because ShootInwardStrict is enabled."
+					: " tries and keeps the last rejected proposal, which can distort the requested distribution.")
+				<< std::endl
 				<< "[ParticleBomb]   Lower the power, or widen the volume." << std::endl;
 			}
 		}
@@ -229,6 +232,8 @@ namespace DLPGenerator {
     	<< "[ParticleBomb]     Add parent   : " << (param.add_root ? "true" : "false") << std::endl
     	<< "[ParticleBomb]     Shoot inward : " << param.shoot_inward_power
     	<< (param.shoot_inward_power > 0. ? " (in-volume path length exponent)" : " (off, isotropic)")
+        << std::endl
+        << "[ParticleBomb]     Shoot inward strict : " << (param.shoot_inward_strict ? "true" : "false")
     	<< std::endl;
 
     	for(size_t idx=0; idx<param.part_param_v.size(); ++idx) {
@@ -372,7 +377,13 @@ namespace DLPGenerator {
 						<< " [GeV/c**2]" << std::endl;
 
 			    	// set momentum
-			    	this->GenMomentum(part_param, part, shoot_inward ? &int_param : nullptr, max_distance);
+			    try {
+			        this->GenMomentum(part_param, part, shoot_inward ? &int_param : nullptr, max_distance);
+			    } catch(const std::runtime_error& error) {
+			        throw std::runtime_error("Interaction block " + std::to_string(cfg_idx)
+			            + ", interaction " + std::to_string(num_int_generated)
+			            + ": " + error.what());
+			    }
 
 			    	// save a particle
 			    	part_v.emplace_back(part);
@@ -641,6 +652,13 @@ namespace DLPGenerator {
 				return;
 
 			if(tries + 1 >= kMaxInwardTries) {
+				if(inward_volume->shoot_inward_strict) {
+					throw std::runtime_error("ShootInwardStrict: inward sampling accepted no direction in "
+						+ std::to_string(kMaxInwardTries)
+						+ " tries. The angular window or volume geometry may give short paths, "
+						"or ShootInward may be too large. Reduce the power or adjust the angular window "
+						"or volume. Generate() returns no batch on failure.");
+				}
 				static bool warned = false;
 				if(!warned) {
 					warned = true;

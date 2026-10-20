@@ -61,6 +61,8 @@ namespace DLPGenerator {
     /// in-volume path length with this exponent. 0 disables the bias and samples
     /// isotropically. Defaulted at compile time, not in the constructor body.
     double shoot_inward_power = kDEFAULT_SHOOT_INWARD_POWER;
+    /// Throw on inward sampling exhaustion instead of returning the last proposal.
+    bool shoot_inward_strict = false;
 
     GenParamInteraction()
     {

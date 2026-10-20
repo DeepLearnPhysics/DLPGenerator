@@ -317,6 +317,47 @@ def acceptance(power, theta_max=None):
     return rates[0], rates[1]
 
 
+class ShootInwardStrictTest(unittest.TestCase):
+    def rows(self, power, strict=None, degenerate=False):
+        cfg = inward_config(power, num_event=2)
+        if strict is not None:
+            cfg["Bomb"]["ShootInwardStrict"] = strict
+        if degenerate:
+            cfg["Bomb"]["ZRange"] = [0.0, 0.0]
+        generator = create_generator(cfg)
+        return [tuple(row) for row in generator.Flatten(generator.Generate())]
+
+    def test_default_preserves_fallback_on_exhaustion(self):
+        self.assertFalse(G.GenParamInteraction().shoot_inward_strict)
+        # This finite exponent underflows the acceptance probabilities to zero
+        # for this seeded sample, exercising exhaustion without long runtimes.
+        default = self.rows(1e300)
+        self.assertEqual(len(default), 2)
+        self.assertEqual(default, self.rows(1e300, False))
+
+    def test_strict_exhaustion_throws_through_pyroot(self):
+        with self.assertRaisesRegex(
+            Exception, r"Interaction block 0, interaction 0: ShootInwardStrict:.*1000 tries"
+        ):
+            self.rows(1e300, True)
+
+    def test_strict_does_not_change_successful_sampling(self):
+        for power, degenerate in ((1.0, False), (0.0, False), (1e300, True)):
+            with self.subTest(power=power, degenerate=degenerate):
+                self.assertEqual(
+                    self.rows(power, False, degenerate),
+                    self.rows(power, True, degenerate),
+                )
+
+    def test_strict_requires_a_boolean(self):
+        for value in ("false", 0, 1, None):
+            cfg = inward_config(1, num_event=1)
+            cfg["Bomb"]["ShootInwardStrict"] = value
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "ShootInwardStrict must be a boolean"):
+                    create_generator(cfg)
+
+
 class InwardAcceptanceTest(unittest.TestCase):
     # Add() warns below this; keep in sync with kMinInwardAcceptance in ParticleBomb.cxx
     THRESHOLD = 0.005
