@@ -220,6 +220,38 @@ class ShootInwardTest(unittest.TestCase):
         self.assertEqual(generator.Add(config), 17)
         self.assertFalse(generator.Configured())
 
+    def test_degenerate_volumes_match_disabled_bias(self):
+        # Cover every plane/line orientation and a point, with a restricted
+        # angular window to ensure the fallback still respects that window.
+        for extents in ((0, 2, 3), (1, 0, 3), (1, 2, 0),
+                        (1, 0, 0), (0, 2, 0), (0, 0, 3), (0, 0, 0)):
+            with self.subTest(extents=extents):
+                config = interaction(
+                    (1, 1), [particle([13], (1, 1), kerange=(1.0, 2.0))],
+                    num_event=(20, 20),
+                )
+                for bounds, extent in zip(
+                    (config.xrange, config.yrange, config.zrange), extents
+                ):
+                    bounds[0], bounds[1] = (5.0, 5.0 + extent)
+                config.part_param_v[0].phi_range[0] = 0.3
+                config.part_param_v[0].phi_range[1] = 0.8
+                config.part_param_v[0].theta_range[0] = 0.4
+                config.part_param_v[0].theta_range[1] = 1.2
+                results = []
+                for power in (0.0, 1.0):
+                    generator = G.ParticleBomb(12345)
+                    config.shoot_inward_power = power
+                    self.assertEqual(generator.Add(config), 0)
+                    self.assertEqual(
+                        tuple(generator.InwardAcceptance(config, config.part_param_v[0])),
+                        (1.0, 1.0),
+                    )
+                    results.append([
+                        tuple(row) for row in generator.Flatten(generator.Generate())
+                    ])
+                self.assertEqual(results[0], results[1])
+
     def test_the_compiled_default_strength_is_zero(self):
         # kDEFAULT_SHOOT_INWARD_POWER in ParticleList.h supplies this as a default
         # member initializer. Asserting on the constant itself would be brittle,

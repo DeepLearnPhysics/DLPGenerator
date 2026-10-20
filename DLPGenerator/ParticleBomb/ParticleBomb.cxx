@@ -21,6 +21,13 @@ namespace DLPGenerator {
 		/// particles thrown from the worst vertex would exhaust the retry budget.
 		const double kMinInwardAcceptance = 0.005;
 
+		bool HasSpatialVolume(const GenParamInteraction& param)
+		{
+			return param.xrange[1] > param.xrange[0]
+				&& param.yrange[1] > param.yrange[0]
+				&& param.zrange[1] > param.zrange[0];
+		}
+
 		bool DecodeIonPDG(int pdg, int& z, int& a)
 		{
 			const int abs_pdg = std::abs(pdg);
@@ -316,11 +323,12 @@ namespace DLPGenerator {
 			    // Bias directions toward the bulk of the volume if requested. The scale of the
 			    // rejection is the longest path the particle could possibly travel inside it,
 			    // shared by every particle of this interaction because they share the vertex.
-			    const double max_distance = int_param.shoot_inward_power > 0.
+			    const double max_distance = int_param.shoot_inward_power > 0. && HasSpatialVolume(int_param)
 			    	? this->MaxExitDistance(int_param, x, y, z) : 0.;
 			    const bool shoot_inward = max_distance > 0.;
-			    if(_debug && int_param.shoot_inward_power > 0. && !shoot_inward)
-			    	std::cout << "[ParticleBomb]   Vertex volume has no extent: keeping directions isotropic" << std::endl;
+			    if(_debug && int_param.shoot_inward_power > 0. && !shoot_inward) {
+			        std::cout << "[ParticleBomb]   Vertex volume has zero spatial volume: keeping directions isotropic within the angular window" << std::endl;
+			    }
 
 			    // Decide which particles to be generated
 			    auto order_list = this->GenParticles(num_part, int_param.part_param_v);
@@ -561,6 +569,9 @@ namespace DLPGenerator {
 	std::array<double,2> ParticleBomb::InwardAcceptance(const GenParamInteraction& param,
 		const GenParamParticle& part) const
 	{
+		// Planes, lines, and points disable the bias, just as in Generate().
+		if(!HasSpatialVolume(param)) return std::array<double,2>{1., 1.};
+
 		// A private engine with a fixed seed. Drawing from _engine here would make the
 		// generated events depend on whether this estimate ever ran.
 		std::mt19937_64 engine(0);

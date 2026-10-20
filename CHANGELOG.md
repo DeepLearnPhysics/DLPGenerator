@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## v1.3.0 - 2026-09-20
 
+### Fixed
+* disable `ShootInward` for plane, line, and point vertex regions when any spatial range has zero width; preserve the configured angular window and report full acceptance without rejection retries
+
 ### Added
 * add an interaction-level `ShootInward` option that samples particle directions with a probability density proportional to the path length remaining inside the vertex volume
 * accept either a boolean or a number for `ShootInward`, where `True` means `1`, `False` means `0`, and `0` is plain isotropic sampling

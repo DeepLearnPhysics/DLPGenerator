@@ -198,6 +198,8 @@ Each top-level YAML key other than `SEED`, `Debug`, and the optional
   `True` selects the default strength, `False` (the default) disables the bias,
   and a number sets the strength directly: `0` is isotropic, `1` is the balanced
   default, and values much above `4` are counterproductive
+  (if any spatial range has zero width, the bias is disabled and directions
+  follow the usual isotropic sampling within the configured angular window)
 * `Particles`: one or more particle templates
 * `SelectionWeight`: relative probability when root-level
   `InteractionSelection` is enabled
