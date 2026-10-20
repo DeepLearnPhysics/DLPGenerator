@@ -207,6 +207,29 @@ Each top-level YAML key other than `SEED`, `Debug`, and the optional
   that fallback can distort the requested direction distribution.
 * `SelectionWeight`: relative probability when root-level
   `InteractionSelection` is enabled
+* `Boost`: optional common momentum boost for each interaction. `BetaGammaRange`
+  sets a uniform, dimensionless βγ magnitude range. Directions are isotropic
+  unless `PhiRange`/`ThetaRange` (radians) or a fixed `Direction` vector is supplied.
+
+For example, add this to an interaction block to boost along the +z beam axis:
+
+```yaml
+Boost:
+  BetaGammaRange: [0.5, 2.0]
+  Direction: [0, 0, 1]
+```
+
+Omit `Direction` for isotropic boost directions, or replace it with angular
+bounds such as `PhiRange: [0, 6.283185307179586]` and `ThetaRange: [0, 0.1]`.
+Do not combine `Direction` with angular bounds. Equal range endpoints specify
+a fixed value. Omitting `Boost`, or setting `BetaGammaRange: [0, 0]`, preserves
+the original seeded output.
+
+The boost changes particle energies and momenta together, leaving the sampled
+vertex and time fixed. Particle energy ranges and `ShootInward` apply before
+the boost; final energies can exceed those ranges and final directions need
+not point inward. This is a boost of the generated configuration, without
+first transforming it to its center-of-momentum frame.
 
 Each particle template configures:
 * `PDG`: allowed PDG codes to sample from

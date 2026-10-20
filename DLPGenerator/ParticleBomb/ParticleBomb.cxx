@@ -30,6 +30,12 @@ namespace DLPGenerator {
 				&& param.zrange[1] > param.zrange[0];
 		}
 
+		bool ValidBoostRange(const std::array<double,2>& range, double maximum)
+		{
+			return std::isfinite(range[0]) && std::isfinite(range[1])
+				&& range[0] >= 0. && range[0] <= range[1] && range[1] <= maximum;
+		}
+
 		bool DecodeIonPDG(int pdg, int& z, int& a)
 		{
 			const int abs_pdg = std::abs(pdg);
@@ -98,6 +104,9 @@ namespace DLPGenerator {
 			if(param.zrange[0]>param.zrange[1]) throw 5;
 			if(param.trange[0]>param.trange[1]) throw 6;
 			if(!std::isfinite(param.shoot_inward_power) || param.shoot_inward_power < 0.) throw 17;
+			if(!ValidBoostRange(param.boost_betagamma_range, std::numeric_limits<double>::max())) throw 18;
+			if(!ValidBoostRange(param.boost_phi_range, M_2PI)) throw 19;
+			if(!ValidBoostRange(param.boost_theta_range, M_PI)) throw 20;
 
 			if(param.part_param_v.empty()) throw 7;
 			size_t minimum_total = 0;
@@ -138,7 +147,10 @@ namespace DLPGenerator {
 			<< "  14 ... a PDG code is not known to ROOT and is not a valid ion code" << std::endl
 			<< "  15 ... required particle minima exceed the minimum particles per event" << std::endl
 			<< "  16 ... particle maxima and positive weights cannot fill the maximum particles per event" << std::endl
-			<< "  17 ... the shoot inward power is negative or not finite" << std::endl;
+			<< "  17 ... the shoot inward power is negative or not finite" << std::endl
+			<< "  18 ... invalid boost beta*gamma range (must be finite, ordered, and non-negative)" << std::endl
+			<< "  19 ... invalid boost phi range (must be finite and ordered within [0, 2*pi])" << std::endl
+			<< "  20 ... invalid boost theta range (must be finite and ordered within [0, pi])" << std::endl;
 			return error_code;
 		}
 		// A strong bias in an awkward volume can be too peaked to sample: GenDirection
@@ -234,6 +246,10 @@ namespace DLPGenerator {
     	<< (param.shoot_inward_power > 0. ? " (in-volume path length exponent)" : " (off, isotropic)")
         << std::endl
         << "[ParticleBomb]     Shoot inward strict : " << (param.shoot_inward_strict ? "true" : "false")
+        << std::endl
+        << "[ParticleBomb]     Boost beta*gamma [" << param.boost_betagamma_range[0] << " : " << param.boost_betagamma_range[1]
+        << "] Phi [" << param.boost_phi_range[0] << " : " << param.boost_phi_range[1]
+        << "] Theta [" << param.boost_theta_range[0] << " : " << param.boost_theta_range[1] << "]"
     	<< std::endl;
 
     	for(size_t idx=0; idx<param.part_param_v.size(); ++idx) {
@@ -389,6 +405,8 @@ namespace DLPGenerator {
 			    	part_v.emplace_back(part);
 
 			    } // done generating particles for an interaction
+
+			    this->BoostInteraction(int_param, part_v);
 
 			    // If the virtual parent is added, sum the energy and momentum
 			    if(int_param.add_root) {
@@ -668,6 +686,33 @@ namespace DLPGenerator {
 						<< std::endl;
 				}
 				return;
+			}
+		}
+	}
+
+	void ParticleBomb::BoostInteraction(const GenParamInteraction& param, std::vector<Particle>& particles)
+	{
+		if(param.boost_betagamma_range[1] == 0.) return;
+		const double bg = this->flat_dfire(param.boost_betagamma_range[0], param.boost_betagamma_range[1]);
+		const double phi = this->flat_dfire(param.boost_phi_range[0], param.boost_phi_range[1]);
+		const double nz = this->flat_dfire(cos(param.boost_theta_range[1]), cos(param.boost_theta_range[0]));
+		const double transverse = sqrt(std::max(0., 1. - nz*nz));
+		const double nx = cos(phi)*transverse, ny = sin(phi)*transverse;
+		const double gamma = std::hypot(1., bg);
+		// gamma-1 = bg^2/(gamma+1), evaluated without squaring bg.
+		const double gamma_minus_one = bg * (bg / (gamma + 1.));
+		for(size_t idx=param.add_root ? 1 : 0; idx<particles.size(); ++idx) {
+			auto& part = particles[idx];
+			const double parallel = nx*part.px + ny*part.py + nz*part.pz;
+			const double shift = gamma_minus_one*parallel + bg*part.energy;
+			const double energy = gamma*part.energy + bg*parallel;
+			part.px += shift*nx;
+			part.py += shift*ny;
+			part.pz += shift*nz;
+			part.energy = energy;
+			if(!std::isfinite(part.energy) || !std::isfinite(part.px)
+				|| !std::isfinite(part.py) || !std::isfinite(part.pz)) {
+				throw std::runtime_error("Boost produced non-finite four-momentum; reduce BetaGammaRange or particle energies.");
 			}
 		}
 	}

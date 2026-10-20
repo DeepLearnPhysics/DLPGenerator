@@ -63,6 +63,11 @@ namespace DLPGenerator {
     double shoot_inward_power = kDEFAULT_SHOOT_INWARD_POWER;
     /// Throw on inward sampling exhaustion instead of returning the last proposal.
     bool shoot_inward_strict = false;
+    /// Common active momentum boost per interaction; uniform in beta*gamma.
+    /// A zero range disables the boost without consuming random numbers.
+    std::array<double, 2> boost_betagamma_range = {{0., 0.}};
+    std::array<double, 2> boost_phi_range = {{0., M_2PI}};
+    std::array<double, 2> boost_theta_range = {{0., M_PI}};
 
     GenParamInteraction()
     {

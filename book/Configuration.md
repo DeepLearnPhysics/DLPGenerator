@@ -210,6 +210,60 @@ These parameters should be specified at the root-level (see the example below). 
   Automatically retrying with a newly sampled vertex can bias the vertex
   distribution toward locations with better acceptance.
 
+### Boosting an entire interaction
+
+An optional interaction-level `Boost` mapping applies the same active Lorentz
+boost to every physical particle in that interaction:
+
+```yaml
+Boost:
+  BetaGammaRange: [0.5, 2.0]
+  Direction: [0, 0, 1]
+```
+
+`BetaGammaRange` is required when `Boost` is present. Its two endpoints must be
+finite, non-negative, and ordered. The generator samples uniformly in the
+dimensionless quantity βγ, with γ = sqrt(1 + (βγ)²). This is not uniform sampling
+in β, γ, or rapidity. Equal endpoints specify a fixed magnitude.
+
+Direction choices:
+
+* Omit direction settings for isotropic directions: uniform azimuth and uniform
+  cos(theta).
+* Supply `Direction: [x, y, z]` for a fixed beam direction. Any finite nonzero
+  vector is accepted; its length is ignored.
+* Supply `PhiRange: [min, max]` and/or `ThetaRange: [min, max]`, in radians in
+  the global coordinate axes. Phi must lie in [0, 2π], theta in [0, π], with
+  ordered endpoints. An omitted range spans its full domain. Theta is sampled
+  uniformly in cosine within the window. Equal endpoints specify fixed angles.
+  Phi intervals crossing zero must be expressed without wrapping.
+
+`Direction` and angular ranges are mutually exclusive. Unknown boost keys are
+rejected. Native C++/PyROOT users can set `boost_betagamma_range`,
+`boost_phi_range`, and `boost_theta_range` on `GenParamInteraction`; `Add()`
+rejects invalid ranges with codes 18, 19, and 20 respectively.
+
+A new boost is sampled for each generated interaction, shared by all of its
+particles. Positive βγ adds momentum along the chosen direction. The generator
+first samples particle content and source four-momenta as usual, then boosts
+them, then forms the synthetic parent's summed four-momentum when `AddParent`
+is enabled. Particle masses and hierarchy are preserved. The parent remains a
+grouping placeholder with its existing mass convention.
+
+This is a momentum transformation at the already sampled lab vertex: position
+and time are unchanged. `KERange`, `UseMom`, particle angular windows, and
+`ShootInward` describe the source configuration before boosting. Consequently,
+final energies can exceed the source ranges, and final directions can leave
+the particle angular window or lose their inward bias. `ShootInwardStrict`
+still only governs source direction sampling. No center-of-momentum
+transformation is performed before the requested boost.
+
+Omitting `Boost` or specifying `BetaGammaRange: [0, 0]` consumes no additional
+random draws and preserves existing seeded output. Enabled boosts use the
+generator's seeded stream, so subsequent events differ from unboosted runs.
+Extremely large boosts can lose floating-point accuracy; a transformation
+producing non-finite four-momenta throws instead of returning invalid output.
+
 ### Example D: generating a parent to group particles
 
 Modify `NumEvent` to allow multiple interactions + enable `AddParent` in the interaction configuration block.

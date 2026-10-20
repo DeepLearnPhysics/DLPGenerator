@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Added
+* add an optional interaction-level `Boost` mapping with a uniformly sampled `BetaGammaRange`, isotropic directions by default, and optional `PhiRange`/`ThetaRange` or a fixed `Direction`
+* apply one common Lorentz boost to physical particle four-momenta per interaction, then recompute the synthetic parent's summed four-momentum; preserve masses, vertex coordinates, times, and hierarchy
+* validate boost configuration in Python and C++, include boost ranges in configuration dumps, and test Lorentz invariants, common boosts, angular sampling, reproducibility, and the zero-boost identity
+
 ## v1.3.0 - 2026-10-20
 
 ### Fixed

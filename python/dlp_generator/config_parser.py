@@ -19,6 +19,50 @@ def parse_shoot_inward(value):
 		)
 	return float(value)
 
+def configure_boost(param, boost):
+	"""Validate the optional interaction boost and populate its C++ ranges."""
+	if not isinstance(boost, dict):
+		raise ValueError('Boost must be a mapping')
+	allowed = {'BetaGammaRange', 'PhiRange', 'ThetaRange', 'Direction'}
+	if set(boost) - allowed:
+		raise ValueError('Unknown Boost keys: %s' % (set(boost) - allowed,))
+	if 'BetaGammaRange' not in boost:
+		raise ValueError('Boost requires BetaGammaRange')
+
+	def finite_number(value):
+		return (not isinstance(value, bool) and isinstance(value, (int, float))
+		        and math.isfinite(value))
+
+	def bounds(name, default, maximum):
+		value = boost.get(name, default)
+		if (not isinstance(value, (list, tuple)) or len(value) != 2
+		    or not all(finite_number(v) for v in value)
+		    or not 0 <= value[0] <= value[1] <= maximum):
+			raise ValueError('Boost.%s must be a finite, ordered, non-negative pair within %s' % (name, maximum))
+		return value
+
+	param.boost_betagamma_range[0], param.boost_betagamma_range[1] = bounds(
+		'BetaGammaRange', None, float('inf'))
+	phi = bounds('PhiRange', [0., 2.*math.pi], 2.*math.pi)
+	theta = bounds('ThetaRange', [0., math.pi], math.pi)
+	if 'Direction' in boost:
+		if 'PhiRange' in boost or 'ThetaRange' in boost:
+			raise ValueError('Boost.Direction cannot be combined with PhiRange or ThetaRange')
+		direction = boost['Direction']
+		if (not isinstance(direction, (list, tuple)) or len(direction) != 3
+		    or not all(finite_number(v) for v in direction)):
+			raise ValueError('Boost.Direction must be a finite nonzero three-vector')
+		scale = max(abs(v) for v in direction)
+		if scale == 0:
+			raise ValueError('Boost.Direction must be a finite nonzero three-vector')
+		x, y, z = (v / scale for v in direction)
+		angle_phi = math.atan2(y, x) % (2.*math.pi)
+		angle_theta = math.atan2(math.hypot(x, y), z)
+		phi = [angle_phi, angle_phi]
+		theta = [angle_theta, angle_theta]
+	param.boost_phi_range[0], param.boost_phi_range[1] = phi
+	param.boost_theta_range[0], param.boost_theta_range[1] = theta
+
 def create_generator(cfg):
 	'''
 	Parse configure ParticleBomb event generator, and return the instance.
@@ -61,6 +105,8 @@ def create_generator(cfg):
 	    if not isinstance(strict, bool):
 	        raise ValueError('ShootInwardStrict must be a boolean, got %r' % (strict,))
 	    param.shoot_inward_strict = strict
+	    if 'Boost' in val:
+	        configure_boost(param, val['Boost'])
 	    # Fill particle-wise config parameter set
 	    for part in val['Particles']:
 	        part_param = G.GenParamParticle()

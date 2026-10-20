@@ -95,6 +95,8 @@ namespace DLPGenerator {
 
   private:
 
+    /// Boost physical four-momenta together, leaving the event vertex unchanged.
+    void BoostInteraction(const GenParamInteraction& param, std::vector<Particle>& particles);
     /// Prints one interaction configuration block, indented under PrintConfig
     void   PrintInteraction(const GenParamInteraction& param, size_t index) const;
     /// Determins which particle to produce
